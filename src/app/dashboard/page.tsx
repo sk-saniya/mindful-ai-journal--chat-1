@@ -11,8 +11,6 @@ import { ChatHistory } from "@/components/dashboard/chat-history";
 import { BreathingExercise } from "@/components/dashboard/breathing-exercise";
 import { TaskActivity } from "@/components/dashboard/task-activity";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, Brain, MessageSquare } from "lucide-react";
-import Link from "next/link";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -67,53 +65,6 @@ export default function DashboardPage() {
             <p className="text-gray-600 dark:text-gray-400 text-lg">
               Let's continue your mindfulness journey
             </p>
-          </motion.div>
-
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="grid md:grid-cols-3 gap-4 mb-8"
-          >
-            <Link href="/journal">
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-6 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white shadow-xl cursor-pointer"
-              >
-                <BookOpen className="h-8 w-8 mb-3" />
-                <h3 className="text-xl font-bold mb-1">Write Journal</h3>
-                <p className="text-white/80 text-sm">
-                  Express your thoughts and feelings
-                </p>
-              </motion.div>
-            </Link>
-
-            <motion.div
-              whileHover={{ scale: 1.02, y: -2 }}
-              className="p-6 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-xl cursor-pointer"
-              onClick={() => {
-                const element = document.getElementById("mood-logger");
-                element?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              <Brain className="h-8 w-8 mb-3" />
-              <h3 className="text-xl font-bold mb-1">Track Mood</h3>
-              <p className="text-white/80 text-sm">Log how you're feeling today</p>
-            </motion.div>
-
-            <Link href="/chat">
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-6 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-xl cursor-pointer"
-              >
-                <MessageSquare className="h-8 w-8 mb-3" />
-                <h3 className="text-xl font-bold mb-1">AI Chat</h3>
-                <p className="text-white/80 text-sm">
-                  Talk with your AI companion
-                </p>
-              </motion.div>
-            </Link>
           </motion.div>
 
           {/* Main Dashboard Grid */}
