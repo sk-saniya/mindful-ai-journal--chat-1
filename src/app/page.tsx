@@ -1,65 +1,187 @@
-import Image from "next/image";
+"use client";
+
+import { motion } from "framer-motion";
+import { Navigation } from "@/components/navigation";
+import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { BookOpen, Brain, TrendingUp, Calendar } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
+  const features = [
+    {
+      icon: BookOpen,
+      title: "AI-Powered Journaling",
+      description: "Express your thoughts and receive intelligent insights",
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      icon: Brain,
+      title: "Mood Tracking",
+      description: "Track your emotional patterns and understand yourself better",
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      icon: TrendingUp,
+      title: "Progress Analytics",
+      description: "Visualize your mental health journey with beautiful graphs",
+      color: "from-green-500 to-emerald-500",
+    },
+    {
+      icon: Calendar,
+      title: "Daily Tasks & Habits",
+      description: "Build healthy routines and achieve your wellness goals",
+      color: "from-orange-500 to-red-500",
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <Navigation />
+      
+      <main className="flex-1 pt-16">
+        {/* Hero Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-7xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <motion.h1
+                className="text-5xl md:text-7xl font-bold mb-6"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Your Mindful
+                </span>
+                <br />
+                <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent">
+                  AI Companion
+                </span>
+              </motion.h1>
+              
+              <motion.p
+                className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                Track your moods, journal your thoughts, and discover insights about your
+                mental wellness journey with AI-powered guidance
+              </motion.p>
+
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4 justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+              >
+                <Link href="/register">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-6 h-auto"
+                  >
+                    Start Your Journey
+                  </Button>
+                </Link>
+                <Link href="/features">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-lg px-8 py-6 h-auto"
+                  >
+                    Learn More
+                  </Button>
+                </Link>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Mood Tracker Slider Section */}
+        <section className="py-12">
+          <MoodTrackerSlider />
+        </section>
+
+        {/* Features Grid */}
+        <section className="py-20 px-4">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-16"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                Everything You Need
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-400">
+                Powerful tools for your mental wellness journey
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className={`inline-block p-3 rounded-xl bg-gradient-to-br ${feature.color} mb-4`}>
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {feature.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl mx-auto bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-12 text-center shadow-2xl"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Ready to Begin?
+            </h2>
+            <p className="text-xl text-white/90 mb-8">
+              Join thousands on their journey to better mental wellness
+            </p>
+            <Link href="/register">
+              <Button
+                size="lg"
+                className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-6 h-auto"
+              >
+                Get Started Free
+              </Button>
+            </Link>
+          </motion.div>
+        </section>
       </main>
+
+      <Footer />
     </div>
   );
 }
