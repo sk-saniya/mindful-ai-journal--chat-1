@@ -25,6 +25,7 @@ import {
   Edit,
   Calendar,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -217,7 +218,11 @@ export default function JournalPage() {
             className="mb-8"
           >
             <div className="flex items-center justify-between mb-6">
-              <div>
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
                 <h1 className="text-4xl md:text-5xl font-bold mb-2">
                   <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                     My Journal
@@ -226,18 +231,31 @@ export default function JournalPage() {
                 <p className="text-gray-600 dark:text-gray-400 text-lg">
                   Your personal space for reflection and growth
                 </p>
-              </div>
-              <Button
-                onClick={() => openDialog()}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              </motion.div>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4, type: "spring", stiffness: 200 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                New Entry
-              </Button>
+                <Button
+                  onClick={() => openDialog()}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Entry
+                </Button>
+              </motion.div>
             </div>
 
             {/* Search Bar */}
-            <div className="relative">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="relative"
+            >
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 value={searchQuery}
@@ -245,7 +263,7 @@ export default function JournalPage() {
                 placeholder="Search your journal entries..."
                 className="pl-10"
               />
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Entries Grid */}
@@ -256,9 +274,20 @@ export default function JournalPage() {
               transition={{ duration: 0.5 }}
               className="flex flex-col items-center justify-center py-20"
             >
-              <div className="p-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 mb-6">
+              <motion.div
+                animate={{
+                  rotate: [0, 5, -5, 0],
+                  scale: [1, 1.05, 1]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 1
+                }}
+                className="p-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 mb-6"
+              >
                 <BookOpen className="h-16 w-16 text-white" />
-              </div>
+              </motion.div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {searchQuery ? "No entries found" : "Start Your Journal"}
               </h3>
@@ -268,72 +297,108 @@ export default function JournalPage() {
                   : "Begin your mindfulness journey by creating your first journal entry"}
               </p>
               {!searchQuery && (
-                <Button
-                  onClick={() => openDialog()}
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create First Entry
-                </Button>
+                  <Button
+                    onClick={() => openDialog()}
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Create First Entry
+                  </Button>
+                </motion.div>
               )}
             </motion.div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <AnimatePresence>
+              <AnimatePresence mode="popLayout">
                 {entries.map((entry, index) => (
                   <motion.div
                     key={entry.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: index * 0.05 }}
+                    layout
+                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ 
+                      delay: index * 0.05,
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 20
+                    }}
+                    whileHover={{ 
+                      scale: 1.03,
+                      rotateY: 2,
+                      transition: { duration: 0.2 }
+                    }}
                   >
-                    <Card className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer group">
+                    <Card className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all cursor-pointer group h-full flex flex-col">
                       <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-2">
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: index * 0.05 + 0.2 }}
+                          className="flex items-center space-x-2"
+                        >
                           <FileText className="h-5 w-5 text-blue-600" />
                           <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                             <Calendar className="h-3 w-3 mr-1" />
                             {formatDate(entry.createdAt)}
                           </span>
-                        </div>
-                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openDialog(entry)}
-                            className="h-7 w-7 p-0"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteEntry(entry.id)}
-                            className="h-7 w-7 p-0 text-red-500 hover:text-red-600"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 0, x: 0 }}
+                          whileHover={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex space-x-1 group-hover:opacity-100"
+                        >
+                          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openDialog(entry)}
+                              className="h-7 w-7 p-0"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          </motion.div>
+                          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteEntry(entry.id)}
+                              className="h-7 w-7 p-0 text-red-500 hover:text-red-600"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </motion.div>
+                        </motion.div>
                       </div>
 
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
                         {entry.title}
                       </h3>
 
-                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-4">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-4 flex-1">
                         {entry.content}
                       </p>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openDialog(entry)}
-                        className="mt-4 w-full text-blue-600 hover:text-blue-700"
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        Read More →
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDialog(entry)}
+                          className="mt-4 w-full text-blue-600 hover:text-blue-700"
+                        >
+                          Read More →
+                        </Button>
+                      </motion.div>
                     </Card>
                   </motion.div>
                 ))}
@@ -344,49 +409,64 @@ export default function JournalPage() {
       </main>
 
       {/* Entry Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>
-              {editingEntry ? "Edit Journal Entry" : "New Journal Entry"}
-            </DialogTitle>
-          </DialogHeader>
+      <AnimatePresence>
+        {isDialogOpen && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <Sparkles className="h-5 w-5 text-purple-500" />
+                  <span>{editingEntry ? "Edit Journal Entry" : "New Journal Entry"}</span>
+                </DialogTitle>
+              </DialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Title</label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Give your entry a title..."
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Content</label>
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your thoughts, feelings, and reflections..."
-                className="min-h-[300px] resize-none"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={closeDialog}>
-                Cancel
-              </Button>
-              <Button
-                onClick={saveEntry}
-                disabled={isSaving || !title.trim() || !content.trim()}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
               >
-                {isSaving ? "Saving..." : editingEntry ? "Update" : "Create"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Title</label>
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Give your entry a title..."
+                    autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Content</label>
+                  <Textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Write your thoughts, feelings, and reflections..."
+                    className="min-h-[300px] resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button variant="outline" onClick={closeDialog}>
+                      Cancel
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      onClick={saveEntry}
+                      disabled={isSaving || !title.trim() || !content.trim()}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      {isSaving ? "Saving..." : editingEntry ? "Update" : "Create"}
+                    </Button>
+                  </motion.div>
+                </div>
+              </motion.div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, Bot, User, Sparkles, MessageSquare, Menu, X } from "lucide-react";
+import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 interface Message {
@@ -24,17 +24,20 @@ interface ChatSession {
   date: string;
   messages: Message[];
   preview: string;
+  timestamp: string;
 }
 
 export default function ChatPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [activeSessionIndex, setActiveSessionIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,6 +73,7 @@ export default function ChatPage() {
 
       if (response.ok) {
         const data = await response.json();
+        setAllMessages(data);
         setMessages(data);
         groupMessagesBySessions(data);
       }
@@ -95,9 +99,22 @@ export default function ChatPage() {
       date,
       messages: msgs,
       preview: msgs.find(m => m.role === "user")?.message.substring(0, 50) + "..." || "New conversation",
+      timestamp: msgs[0]?.createdAt || "",
     }));
 
     setChatSessions(sessionArray.reverse());
+  };
+
+  const loadSession = (index: number) => {
+    setActiveSessionIndex(index);
+    setMessages(chatSessions[index].messages);
+    scrollToBottom();
+  };
+
+  const startNewChat = () => {
+    setActiveSessionIndex(null);
+    setMessages([]);
+    setInput("");
   };
 
   const sendMessage = async () => {
@@ -213,7 +230,7 @@ export default function ChatPage() {
               transition={{ duration: 0.3 }}
               className="w-72 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 p-4 overflow-y-auto"
             >
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Chat History
                 </h2>
@@ -227,7 +244,22 @@ export default function ChatPage() {
                 </Button>
               </div>
 
-              <ScrollArea className="h-[calc(100vh-180px)]">
+              {/* New Chat Button */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mb-4"
+              >
+                <Button
+                  onClick={startNewChat}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Chat
+                </Button>
+              </motion.div>
+
+              <ScrollArea className="h-[calc(100vh-220px)]">
                 <div className="space-y-2">
                   {chatSessions.map((session, index) => (
                     <motion.div
@@ -235,16 +267,25 @@ export default function ChatPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
+                      whileHover={{ scale: 1.02 }}
                       className="group"
                     >
                       <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 px-2">
                         {getRelativeDate(session.date)}
                       </div>
-                      <button
-                        className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => loadSession(index)}
+                        className={`w-full text-left p-3 rounded-lg transition-all ${
+                          activeSessionIndex === index
+                            ? "bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }`}
                       >
                         <div className="flex items-start space-x-2">
-                          <MessageSquare className="h-4 w-4 mt-1 text-blue-500 flex-shrink-0" />
+                          <MessageSquare className={`h-4 w-4 mt-1 flex-shrink-0 ${
+                            activeSessionIndex === index ? "text-blue-600" : "text-blue-500"
+                          }`} />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
                               {session.preview}
@@ -254,7 +295,7 @@ export default function ChatPage() {
                             </p>
                           </div>
                         </div>
-                      </button>
+                      </motion.button>
                     </motion.div>
                   ))}
                 </div>
@@ -311,16 +352,29 @@ export default function ChatPage() {
                   ref={scrollRef}
                   className="flex-1 p-6"
                 >
-                  <AnimatePresence>
+                  <AnimatePresence mode="wait">
                     {messages.length === 0 ? (
                       <motion.div
+                        key="empty"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
                         className="h-full flex flex-col items-center justify-center text-center"
                       >
-                        <div className="p-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 mb-4">
+                        <motion.div
+                          animate={{ 
+                            rotate: [0, 5, -5, 0],
+                            scale: [1, 1.05, 1]
+                          }}
+                          transition={{ 
+                            duration: 2,
+                            repeat: Infinity,
+                            repeatDelay: 1
+                          }}
+                          className="p-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 mb-4"
+                        >
                           <Sparkles className="h-12 w-12 text-white" />
-                        </div>
+                        </motion.div>
                         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                           Start a Conversation
                         </h3>
@@ -330,7 +384,13 @@ export default function ChatPage() {
                         </p>
                       </motion.div>
                     ) : (
-                      <div className="space-y-4">
+                      <motion.div
+                        key="messages"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="space-y-4"
+                      >
                         {messages.map((message, index) => (
                           <motion.div
                             key={message.id}
@@ -342,12 +402,16 @@ export default function ChatPage() {
                             }`}
                           >
                             {message.role === "assistant" && (
-                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                              <motion.div
+                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center"
+                              >
                                 <Bot className="h-5 w-5 text-white" />
-                              </div>
+                              </motion.div>
                             )}
 
-                            <div
+                            <motion.div
+                              whileHover={{ scale: 1.01 }}
                               className={`max-w-[75%] p-4 rounded-2xl ${
                                 message.role === "user"
                                   ? "bg-gradient-to-br from-blue-500 to-purple-500 text-white"
@@ -357,16 +421,19 @@ export default function ChatPage() {
                               <p className="text-sm leading-relaxed">
                                 {message.message}
                               </p>
-                            </div>
+                            </motion.div>
 
                             {message.role === "user" && (
-                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center">
+                              <motion.div
+                                whileHover={{ scale: 1.1, rotate: -5 }}
+                                className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center"
+                              >
                                 <User className="h-5 w-5 text-white" />
-                              </div>
+                              </motion.div>
                             )}
                           </motion.div>
                         ))}
-                      </div>
+                      </motion.div>
                     )}
                   </AnimatePresence>
                 </ScrollArea>
@@ -387,13 +454,18 @@ export default function ChatPage() {
                       className="min-h-[60px] resize-none"
                       disabled={isSending}
                     />
-                    <Button
-                      onClick={sendMessage}
-                      disabled={!input.trim() || isSending}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 self-end"
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                      <Button
+                        onClick={sendMessage}
+                        disabled={!input.trim() || isSending}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 self-end"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
                   </div>
                 </div>
               </Card>
