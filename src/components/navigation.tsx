@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, LogOut, BookOpen, MessageSquare, BarChart3, Sun, Moon, Brain } from "lucide-react";
+import { User, LogOut, BookOpen, MessageSquare, BarChart3, Sun, Moon, Brain, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession, authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
@@ -90,7 +90,7 @@ export const Navigation = () => {
               About
             </Link>
 
-            {/* Show Journal, Chat, Analytics when logged in */}
+            {/* Show Journal, Chat, Dashboard when logged in */}
             {!isPending && session?.user && (
               <>
                 <Link href="/journal">
@@ -119,7 +119,7 @@ export const Navigation = () => {
                     className="bg-white text-black hover:bg-gray-200 flex items-center space-x-1"
                   >
                     <BarChart3 className="h-4 w-4" />
-                    <span>Analytics</span>
+                    <span>Dashboard</span>
                   </Button>
                 </Link>
 
@@ -155,6 +155,11 @@ export const Navigation = () => {
                     <div className="px-2 py-1.5 text-xs text-gray-500">
                       {session.user.email}
                     </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push("/profile")}>
+                      <UserCircle className="h-4 w-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="h-4 w-4 mr-2" />
