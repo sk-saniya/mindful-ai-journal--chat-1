@@ -102,7 +102,7 @@ export default function DashboardPage() {
               <p className="text-white/80 text-sm">Log how you're feeling today</p>
             </motion.div>
 
-            <Link href="/journal">
+            <Link href="/chat">
               <motion.div
                 whileHover={{ scale: 1.02, y: -2 }}
                 className="p-6 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-xl cursor-pointer"

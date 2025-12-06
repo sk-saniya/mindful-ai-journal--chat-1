@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Navigation } from "@/components/navigation";
 import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
 import { Footer } from "@/components/footer";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Brain, TrendingUp, Calendar } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +40,11 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Navigation />
+      
+      {/* Dark/Light Mode Toggle - Fixed Position */}
+      <div className="fixed top-20 right-4 z-40">
+        <ThemeToggle />
+      </div>
       
       <main className="flex-1 pt-16">
         {/* Hero Section */}

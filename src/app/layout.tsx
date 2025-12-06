@@ -6,8 +6,11 @@ import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Mindful AI Journal",
-  description: "Your personal AI-powered mindfulness and journaling companion",
+  title: "Mindful Journey - Your AI Mental Wellness Companion",
+  description: "Track moods, journal thoughts, and discover insights about your mental wellness journey with AI-powered guidance",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

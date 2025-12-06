@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, User, LogOut } from "lucide-react";
+import { Home, User, LogOut, BookOpen, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession, authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
@@ -52,7 +52,7 @@ export const Navigation = () => {
               <Home className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Mindful AI
+              Mindful Journey
             </span>
           </Link>
 
@@ -78,6 +78,34 @@ export const Navigation = () => {
             >
               About
             </Link>
+
+            {/* Show Journal and Chat links when logged in */}
+            {!isPending && session?.user && (
+              <>
+                <Link
+                  href="/journal"
+                  className={`text-sm font-medium transition-colors hover:text-blue-600 dark:hover:text-blue-400 flex items-center space-x-1 ${
+                    pathname === "/journal"
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span>Journal</span>
+                </Link>
+                <Link
+                  href="/chat"
+                  className={`text-sm font-medium transition-colors hover:text-blue-600 dark:hover:text-blue-400 flex items-center space-x-1 ${
+                    pathname === "/chat"
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Chat</span>
+                </Link>
+              </>
+            )}
 
             {/* Auth Buttons */}
             {!isPending && (
