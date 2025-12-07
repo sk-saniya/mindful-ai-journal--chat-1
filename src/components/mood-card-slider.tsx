@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import { Smile, Frown, Meh, Zap, Cloud, Heart, Sun, Sparkles } from "lucide-react";
+import { Smile, Frown, Meh, Zap, Cloud, Heart, Sun, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const moods = [
   {
@@ -88,12 +89,25 @@ export const MoodCardSlider = () => {
     const offset = info.offset.x;
     const velocity = info.velocity.x;
 
-    if (Math.abs(velocity) > 500 || Math.abs(offset) > 100) {
+    // Improved drag sensitivity
+    if (Math.abs(velocity) > 300 || Math.abs(offset) > 80) {
       if (offset > 0 && currentIndex > 0) {
         setCurrentIndex(currentIndex - 1);
       } else if (offset < 0 && currentIndex < moods.length - 1) {
         setCurrentIndex(currentIndex + 1);
       }
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIndex < moods.length - 1) {
+      setCurrentIndex(currentIndex + 1);
     }
   };
 
@@ -111,121 +125,146 @@ export const MoodCardSlider = () => {
         <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
           How Are You Feeling Today?
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
-          Drag or swipe to explore different moods
+        <p className="text-base md:text-lg text-gray-700 dark:text-gray-300 font-medium">
+          Drag, swipe, or use arrows to explore different moods
         </p>
       </motion.div>
 
-      {/* Main Card Display */}
-      <div className="relative h-[400px] md:h-[450px] mb-8 overflow-hidden" ref={containerRef}>
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.2}
-          onDragEnd={onDragEnd}
-          style={{ x: dragX }}
-          className="flex items-center justify-center h-full cursor-grab active:cursor-grabbing"
+      {/* Main Card Display with Arrow Controls */}
+      <div className="relative">
+        {/* Previous Arrow */}
+        <Button
+          onClick={handlePrev}
+          disabled={currentIndex === 0}
+          variant="outline"
+          size="icon"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg border-2 border-gray-200 dark:border-gray-700 disabled:opacity-30 hover:scale-110 transition-all"
         >
-          {moods.map((mood, index) => {
-            const MoodIcon = mood.icon;
-            const offset = index - currentIndex;
-            const isActive = index === currentIndex;
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
 
-            return (
-              <motion.div
-                key={mood.id}
-                animate={{
-                  scale: isActive ? 1 : 0.8,
-                  x: offset * 280,
-                  opacity: Math.abs(offset) > 1 ? 0 : isActive ? 1 : 0.5,
-                  rotateY: offset * 15,
-                  z: isActive ? 0 : -100,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                }}
-                className="absolute w-72 md:w-80"
-                style={{
-                  pointerEvents: isActive ? "auto" : "none",
-                }}
-              >
-                <div
-                  className={`relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden`}
+        {/* Next Arrow */}
+        <Button
+          onClick={handleNext}
+          disabled={currentIndex === moods.length - 1}
+          variant="outline"
+          size="icon"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg border-2 border-gray-200 dark:border-gray-700 disabled:opacity-30 hover:scale-110 transition-all"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </Button>
+
+        <div className="relative h-[420px] md:h-[480px] mb-8 overflow-hidden px-16" ref={containerRef}>
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.1}
+            dragMomentum={false}
+            onDragEnd={onDragEnd}
+            style={{ x: dragX }}
+            className="flex items-center justify-center h-full cursor-grab active:cursor-grabbing"
+          >
+            {moods.map((mood, index) => {
+              const MoodIcon = mood.icon;
+              const offset = index - currentIndex;
+              const isActive = index === currentIndex;
+
+              return (
+                <motion.div
+                  key={mood.id}
+                  animate={{
+                    scale: isActive ? 1 : 0.75,
+                    x: offset * 300,
+                    opacity: Math.abs(offset) > 1 ? 0 : isActive ? 1 : 0.4,
+                    rotateY: offset * 12,
+                    z: isActive ? 0 : -150,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                  }}
+                  className="absolute w-80 md:w-96"
+                  style={{
+                    pointerEvents: isActive ? "auto" : "none",
+                  }}
                 >
-                  {/* Background Glow */}
                   <div
-                    className={`absolute inset-0 ${mood.bgGlow} blur-3xl opacity-50`}
-                  />
+                    className={`relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden`}
+                  >
+                    {/* Background Glow */}
+                    <div
+                      className={`absolute inset-0 ${mood.bgGlow} blur-3xl opacity-50`}
+                    />
 
-                  {/* Content */}
-                  <div className="relative z-10">
-                    {/* Icon */}
-                    <motion.div
-                      animate={{
-                        rotate: isActive ? [0, 5, -5, 0] : 0,
-                        scale: isActive ? [1, 1.1, 1] : 1,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                      className={`w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${mood.color} flex items-center justify-center shadow-lg`}
-                    >
-                      <MoodIcon className="w-10 h-10 text-white" />
-                    </motion.div>
+                    {/* Content */}
+                    <div className="relative z-10">
+                      {/* Icon */}
+                      <motion.div
+                        animate={{
+                          rotate: isActive ? [0, 5, -5, 0] : 0,
+                          scale: isActive ? [1, 1.1, 1] : 1,
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                        className={`w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${mood.color} flex items-center justify-center shadow-xl`}
+                      >
+                        <MoodIcon className="w-12 h-12 text-white" />
+                      </motion.div>
 
-                    {/* Emoji */}
-                    <motion.div
-                      animate={{
-                        y: isActive ? [0, -10, 0] : 0,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                      className="text-6xl mb-4 text-center"
-                    >
-                      {mood.emoji}
-                    </motion.div>
+                      {/* Emoji */}
+                      <motion.div
+                        animate={{
+                          y: isActive ? [0, -10, 0] : 0,
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                        className="text-7xl mb-5 text-center"
+                      >
+                        {mood.emoji}
+                      </motion.div>
 
-                    {/* Label */}
-                    <h3
-                      className={`text-3xl font-bold mb-3 text-center bg-gradient-to-r ${mood.color} bg-clip-text text-transparent`}
-                    >
-                      {mood.label}
-                    </h3>
+                      {/* Label */}
+                      <h3
+                        className={`text-4xl font-bold mb-4 text-center bg-gradient-to-r ${mood.color} bg-clip-text text-transparent`}
+                      >
+                        {mood.label}
+                      </h3>
 
-                    {/* Description */}
-                    <p className="text-gray-600 dark:text-gray-400 text-center text-sm">
-                      {mood.description}
-                    </p>
+                      {/* Description */}
+                      <p className="text-gray-700 dark:text-gray-300 text-center text-base font-medium">
+                        {mood.description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
       </div>
 
       {/* Navigation Dots */}
-      <div className="flex justify-center gap-2 mb-6">
+      <div className="flex justify-center gap-3 mb-6">
         {moods.map((mood, index) => (
           <button
             key={mood.id}
             onClick={() => setCurrentIndex(index)}
-            className="group relative"
+            className="group relative transition-transform hover:scale-125"
             aria-label={`Go to ${mood.label}`}
           >
             <motion.div
               animate={{
-                scale: index === currentIndex ? 1.2 : 1,
-                opacity: index === currentIndex ? 1 : 0.5,
+                scale: index === currentIndex ? 1.3 : 1,
+                opacity: index === currentIndex ? 1 : 0.4,
               }}
-              className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${mood.color} transition-all`}
+              className={`w-3 h-3 rounded-full bg-gradient-to-r ${mood.color} transition-all shadow-lg`}
             />
           </button>
         ))}
@@ -237,11 +276,11 @@ export const MoodCardSlider = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
-        className="text-center"
+        className="text-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-4 max-w-md mx-auto border border-gray-200 dark:border-gray-700"
       >
-        <p className="text-lg text-gray-700 dark:text-gray-300 font-medium">
+        <p className="text-lg text-gray-800 dark:text-gray-200 font-semibold">
           Currently viewing:{" "}
-          <span className={`font-bold bg-gradient-to-r ${currentMood.color} bg-clip-text text-transparent`}>
+          <span className={`font-bold bg-gradient-to-r ${currentMood.color} bg-clip-text text-transparent text-xl`}>
             {currentMood.label}
           </span>
         </p>
