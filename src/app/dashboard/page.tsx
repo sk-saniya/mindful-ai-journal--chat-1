@@ -11,7 +11,6 @@ import { GoalsTracker } from "@/components/dashboard/goals-tracker";
 import { MeditationTracker } from "@/components/dashboard/meditation-tracker";
 import { GuidedMeditationPlayer } from "@/components/dashboard/guided-meditation-player";
 import { CrisisSupport } from "@/components/dashboard/crisis-support";
-import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
 import { StressTracker } from "@/components/dashboard/stress-tracker";
 import { SleepTracker } from "@/components/dashboard/sleep-tracker";
 import { ActivityTracker } from "@/components/dashboard/activity-tracker";
@@ -162,24 +161,11 @@ export default function DashboardPage() {
             </p>
           </motion.div>
 
-          {/* Mood Tracker Slider Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-6"
-          >
-            <MoodTrackerSlider 
-              onMoodSelect={setSelectedMood} 
-              onMoodSaved={handleMoodSaved}
-            />
-          </motion.div>
-
           {/* Mood Trends - Full Width */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
             className="mb-6"
           >
             <MoodTrends key={refreshKey} selectedMood={selectedMood} />
