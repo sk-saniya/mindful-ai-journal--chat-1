@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Navigation } from "@/components/navigation";
 import { MoodTrends } from "@/components/dashboard/mood-trends";
-import { BreathingExercise } from "@/components/dashboard/breathing-exercise";
+import { DailyAffirmations } from "@/components/dashboard/daily-affirmations";
 import { GoalsTracker } from "@/components/dashboard/goals-tracker";
 import { MeditationTracker } from "@/components/dashboard/meditation-tracker";
 import { GuidedMeditationPlayer } from "@/components/dashboard/guided-meditation-player";
@@ -175,7 +175,7 @@ export default function DashboardPage() {
             />
           </motion.div>
 
-          {/* Mood Trends - Full Width with Weekly/Monthly Selector */}
+          {/* Mood Trends - Full Width */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -185,78 +185,45 @@ export default function DashboardPage() {
             <MoodTrends key={refreshKey} selectedMood={selectedMood} />
           </motion.div>
 
-          {/* New Trackers Grid - Stress, Sleep, Activity */}
-          <div className="grid lg:grid-cols-3 gap-6 mb-6">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <StressTracker />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.35 }}
-            >
-              <SleepTracker />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <ActivityTracker />
-            </motion.div>
-          </div>
-
-          {/* Goals and Meditation Trackers */}
-          <div className="grid lg:grid-cols-2 gap-6 mb-6">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.45 }}
-            >
-              <GoalsTracker />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.45 }}
-            >
-              <MeditationTracker />
-            </motion.div>
-          </div>
-
-          {/* Main Content Grid */}
-          <div className="grid lg:grid-cols-2 gap-6 mb-6">
-            {/* Breathing Exercise */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            >
-              <BreathingExercise />
-            </motion.div>
-
-            {/* Guided Meditation Player */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            >
-              <GuidedMeditationPlayer />
-            </motion.div>
-          </div>
-
-          {/* Wellness Support - Full Width */}
+          {/* Wellness Trackers Grid - 3 columns */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.55 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="grid lg:grid-cols-3 gap-6 mb-6"
+          >
+            <StressTracker />
+            <SleepTracker />
+            <ActivityTracker />
+          </motion.div>
+
+          {/* Goals and Meditation Section - 2 columns */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="grid lg:grid-cols-2 gap-6 mb-6"
+          >
+            <GoalsTracker />
+            <MeditationTracker />
+          </motion.div>
+
+          {/* Meditation & Affirmations Section - 2 columns */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="grid lg:grid-cols-2 gap-6 mb-6"
+          >
+            <GuidedMeditationPlayer />
+            <DailyAffirmations />
+          </motion.div>
+
+          {/* Crisis Support - Full Width */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
             <CrisisSupport />
           </motion.div>

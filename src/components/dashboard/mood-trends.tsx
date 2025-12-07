@@ -36,7 +36,7 @@ interface MoodTrendsProps {
   selectedMood?: string | null;
 }
 
-type TimeRange = "week" | "month";
+type TimeRange = "today" | "week" | "month";
 
 export const MoodTrends = ({ selectedMood }: MoodTrendsProps) => {
   const [moodData, setMoodData] = useState<MoodEntry[]>([]);
@@ -51,7 +51,7 @@ export const MoodTrends = ({ selectedMood }: MoodTrendsProps) => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("bearer_token");
-      const limit = timeRange === "week" ? 50 : 100;
+      const limit = timeRange === "today" ? 20 : timeRange === "week" ? 50 : 100;
       const response = await fetch(`/api/mood-tracking?limit=${limit}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -74,7 +74,9 @@ export const MoodTrends = ({ selectedMood }: MoodTrendsProps) => {
     const now = new Date();
     const cutoffDate = new Date();
     
-    if (timeRange === "week") {
+    if (timeRange === "today") {
+      cutoffDate.setHours(0, 0, 0, 0);
+    } else if (timeRange === "week") {
       cutoffDate.setDate(now.getDate() - 7);
     } else {
       cutoffDate.setDate(now.getDate() - 30);
@@ -94,23 +96,35 @@ export const MoodTrends = ({ selectedMood }: MoodTrendsProps) => {
 
   // Transform data for multi-line chart
   const chartData = (() => {
-    // Group by date
+    // Group by date/time
     const dateMap = new Map<string, Record<string, number>>();
 
     filteredData
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       .forEach((entry) => {
-        const date = new Date(entry.createdAt).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
+        const entryDate = new Date(entry.createdAt);
+        let dateKey: string;
         
-        if (!dateMap.has(date)) {
-          dateMap.set(date, {});
+        if (timeRange === "today") {
+          // For today, show time
+          dateKey = entryDate.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        } else {
+          // For week/month, show date
+          dateKey = entryDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+        }
+        
+        if (!dateMap.has(dateKey)) {
+          dateMap.set(dateKey, {});
         }
         
         const moodKey = entry.moodLabel.toLowerCase();
-        dateMap.get(date)![moodKey] = entry.moodValue;
+        dateMap.get(dateKey)![moodKey] = entry.moodValue;
       });
 
     return Array.from(dateMap.entries()).map(([date, moods]) => ({
@@ -140,6 +154,15 @@ export const MoodTrends = ({ selectedMood }: MoodTrendsProps) => {
           <div className="flex items-center space-x-3">
             {/* Time Range Selector */}
             <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              <Button
+                size="sm"
+                variant={timeRange === "today" ? "default" : "ghost"}
+                onClick={() => setTimeRange("today")}
+                className={timeRange === "today" ? "bg-gradient-to-r from-blue-600 to-purple-600" : ""}
+              >
+                <Calendar className="h-3 w-3 mr-1" />
+                Today
+              </Button>
               <Button
                 size="sm"
                 variant={timeRange === "week" ? "default" : "ghost"}
@@ -232,7 +255,11 @@ export const MoodTrends = ({ selectedMood }: MoodTrendsProps) => {
               transition={{ delay: 0.3 }}
               className="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center"
             >
-              Tracking {filteredData.length} mood {filteredData.length === 1 ? "entry" : "entries"} over the last {timeRange === "week" ? "7 days" : "30 days"}
+              Tracking {filteredData.length} mood {filteredData.length === 1 ? "entry" : "entries"} {
+                timeRange === "today" ? "today" : 
+                timeRange === "week" ? "over the last 7 days" : 
+                "over the last 30 days"
+              }
             </motion.div>
           </>
         )}

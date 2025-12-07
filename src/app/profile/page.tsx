@@ -3,18 +3,36 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
+import { useSession, authClient } from "@/lib/auth-client";
 import { Navigation } from "@/components/navigation";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { User, Mail, Calendar } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { User, Mail, Calendar, Lock, Bell, Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [mounted, setMounted] = useState(false);
+  
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  // Notification preferences
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [moodReminders, setMoodReminders] = useState(true);
+  const [weeklyReports, setWeeklyReports] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -22,6 +40,51 @@ export default function ProfilePage() {
       router.push("/login");
     }
   }, [session, isPending, router]);
+
+  const handlePasswordChange = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Please fill in all password fields");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      const { error } = await authClient.changePassword({
+        currentPassword,
+        newPassword,
+        revokeOtherSessions: false,
+      });
+
+      if (error) {
+        toast.error("Failed to change password. Please check your current password.");
+      } else {
+        toast.success("Password changed successfully!");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleNotificationUpdate = (type: string, value: boolean) => {
+    // In a real app, this would save to backend
+    toast.success("Notification preferences updated!");
+  };
 
   if (isPending || !mounted) {
     return (
@@ -153,7 +216,7 @@ export default function ProfilePage() {
               </span>
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Manage your account information
+              Manage your account information and preferences
             </p>
           </motion.div>
 
@@ -165,7 +228,7 @@ export default function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <Card className="p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border-gray-200 dark:border-gray-700 shadow-xl">
+              <Card className="p-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border-gray-200 dark:border-gray-700 shadow-xl">
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="p-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-500">
                     <User className="h-6 w-6 text-white" />
@@ -185,7 +248,7 @@ export default function ProfilePage() {
                       id="name"
                       value={session.user.name}
                       disabled
-                      className="bg-gray-50 dark:bg-gray-900/50"
+                      className="bg-white/50 dark:bg-gray-900/50"
                     />
                   </div>
 
@@ -198,7 +261,7 @@ export default function ProfilePage() {
                       id="email"
                       value={session.user.email}
                       disabled
-                      className="bg-gray-50 dark:bg-gray-900/50"
+                      className="bg-white/50 dark:bg-gray-900/50"
                     />
                   </div>
 
@@ -211,7 +274,210 @@ export default function ProfilePage() {
                       id="created"
                       value={createdDate}
                       disabled
-                      className="bg-gray-50 dark:bg-gray-900/50"
+                      className="bg-white/50 dark:bg-gray-900/50"
+                    />
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Password Change */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Card className="p-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border-gray-200 dark:border-gray-700 shadow-xl">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="p-3 rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
+                    <Lock className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Change Password
+                  </h2>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="currentPassword" className="text-sm font-medium mb-2 block">
+                      Current Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="currentPassword"
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter current password"
+                        autoComplete="off"
+                        className="bg-white/50 dark:bg-gray-900/50 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="newPassword" className="text-sm font-medium mb-2 block">
+                      New Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password (min 6 characters)"
+                        autoComplete="off"
+                        className="bg-white/50 dark:bg-gray-900/50 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="confirmPassword" className="text-sm font-medium mb-2 block">
+                      Confirm New Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        autoComplete="off"
+                        className="bg-white/50 dark:bg-gray-900/50 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handlePasswordChange}
+                    disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    {isChangingPassword ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Changing Password...
+                      </>
+                    ) : (
+                      "Change Password"
+                    )}
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Notification Preferences */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <Card className="p-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border-gray-200 dark:border-gray-700 shadow-xl">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="p-3 rounded-full bg-gradient-to-br from-green-500 to-emerald-500">
+                    <Bell className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    Notification Preferences
+                  </h2>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="emailNotifications" className="text-base font-medium">
+                        Email Notifications
+                      </Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Receive updates and insights via email
+                      </p>
+                    </div>
+                    <Switch
+                      id="emailNotifications"
+                      checked={emailNotifications}
+                      onCheckedChange={(checked) => {
+                        setEmailNotifications(checked);
+                        handleNotificationUpdate("email", checked);
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="pushNotifications" className="text-base font-medium">
+                        Push Notifications
+                      </Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Get real-time notifications in your browser
+                      </p>
+                    </div>
+                    <Switch
+                      id="pushNotifications"
+                      checked={pushNotifications}
+                      onCheckedChange={(checked) => {
+                        setPushNotifications(checked);
+                        handleNotificationUpdate("push", checked);
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="moodReminders" className="text-base font-medium">
+                        Daily Mood Reminders
+                      </Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Remind me to track my mood each day
+                      </p>
+                    </div>
+                    <Switch
+                      id="moodReminders"
+                      checked={moodReminders}
+                      onCheckedChange={(checked) => {
+                        setMoodReminders(checked);
+                        handleNotificationUpdate("moodReminders", checked);
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="weeklyReports" className="text-base font-medium">
+                        Weekly Progress Reports
+                      </Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Get weekly summaries of your wellness journey
+                      </p>
+                    </div>
+                    <Switch
+                      id="weeklyReports"
+                      checked={weeklyReports}
+                      onCheckedChange={(checked) => {
+                        setWeeklyReports(checked);
+                        handleNotificationUpdate("weeklyReports", checked);
+                      }}
                     />
                   </div>
                 </div>
