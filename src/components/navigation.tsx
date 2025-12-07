@@ -61,7 +61,7 @@ export const Navigation = () => {
   if (!mounted) return null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -69,9 +69,16 @@ export const Navigation = () => {
             href="/" 
             className="flex items-center space-x-2 group"
           >
-            <Brain className="h-7 w-7 text-purple-600 dark:text-purple-400" />
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              Mindful<span className="text-blue-600 dark:text-blue-400">Journal</span>
+            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg group-hover:shadow-xl transition-shadow">
+              <Brain className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Mindful
+              </span>
+              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Journey
+              </span>
             </span>
           </Link>
 
@@ -97,7 +104,7 @@ export const Navigation = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 flex items-center space-x-1"
+                    className="text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 flex items-center space-x-1"
                   >
                     <BookOpen className="h-4 w-4" />
                     <span>Journal</span>
@@ -107,7 +114,7 @@ export const Navigation = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 flex items-center space-x-1"
+                    className="text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 flex items-center space-x-1"
                   >
                     <MessageSquare className="h-4 w-4" />
                     <span>Chat</span>
@@ -116,7 +123,7 @@ export const Navigation = () => {
                 <Link href="/dashboard">
                   <Button
                     size="sm"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 flex items-center space-x-1"
+                    className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg transition-all flex items-center space-x-1"
                   >
                     <BarChart3 className="h-4 w-4" />
                     <span>Dashboard</span>
@@ -128,7 +135,7 @@ export const Navigation = () => {
                   variant="ghost"
                   size="sm"
                   onClick={toggleTheme}
-                  className="text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50"
+                  className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   {theme === "light" ? (
                     <Moon className="h-4 w-4" />
@@ -143,7 +150,7 @@ export const Navigation = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-full w-9 h-9 p-0"
+                      className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full w-9 h-9 p-0"
                     >
                       <User className="h-5 w-5" />
                     </Button>
@@ -174,14 +181,14 @@ export const Navigation = () => {
             {!isPending && !session?.user && (
               <div className="flex items-center space-x-3">
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50">
+                  <Button variant="ghost" size="sm" className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                     Sign In
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button
                     size="sm"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+                    className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg transition-all"
                   >
                     Get Started
                   </Button>

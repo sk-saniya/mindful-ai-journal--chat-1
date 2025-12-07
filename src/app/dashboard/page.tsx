@@ -8,18 +8,14 @@ import { Navigation } from "@/components/navigation";
 import { MoodGraph } from "@/components/dashboard/mood-graph";
 import { BreathingExercise } from "@/components/dashboard/breathing-exercise";
 import { TaskActivity } from "@/components/dashboard/task-activity";
-import { StressLevel } from "@/components/dashboard/stress-level";
-import { SleepLevel } from "@/components/dashboard/sleep-level";
 import { CrisisSupport } from "@/components/dashboard/crisis-support";
 import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card } from "@/components/ui/card";
-import { TrendingUp, Activity, Heart } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isPending && !session?.user) {
@@ -59,141 +55,67 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8"
+            className="mb-6"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-2">
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Dashboard
+                Welcome back, {session.user.name}
               </span>
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Track your wellness metrics and progress
+              Track your wellness journey and discover insights
             </p>
           </motion.div>
-
-          {/* Stats Overview */}
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Card className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 border-0 text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm opacity-90">Mood Entries</p>
-                    <p className="text-3xl font-bold">24</p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 opacity-80" />
-                </div>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Card className="p-4 bg-gradient-to-br from-purple-500 to-pink-500 border-0 text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm opacity-90">Tasks Completed</p>
-                    <p className="text-3xl font-bold">12</p>
-                  </div>
-                  <Activity className="h-8 w-8 opacity-80" />
-                </div>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <Card className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm opacity-90">Wellness Score</p>
-                    <p className="text-3xl font-bold">85%</p>
-                  </div>
-                  <Heart className="h-8 w-8 opacity-80" />
-                </div>
-              </Card>
-            </motion.div>
-          </div>
 
           {/* Mood Tracker Slider Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.35 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
             className="mb-6"
           >
-            <MoodTrackerSlider />
+            <MoodTrackerSlider onMoodSelect={setSelectedMood} />
           </motion.div>
 
-          {/* Main Dashboard Grid */}
+          {/* Mood Graph - Full Width with Filtering */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mb-6"
+          >
+            <MoodGraph selectedMood={selectedMood} />
+          </motion.div>
+
+          {/* Main Content Grid */}
           <div className="grid lg:grid-cols-2 gap-6 mb-6">
-            {/* Stress Level */}
+            {/* Breathing Exercise */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <StressLevel />
+              <BreathingExercise />
             </motion.div>
 
-            {/* Sleep Level */}
+            {/* Task Activity */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <SleepLevel />
-            </motion.div>
-          </div>
-
-          {/* Mood Graph - Full Width */}
-          <motion.div
-            key={refreshKey}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="mb-6"
-          >
-            <MoodGraph />
-          </motion.div>
-
-          {/* Breathing Exercise - Full Width */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="mb-6"
-          >
-            <BreathingExercise />
-          </motion.div>
-
-          {/* Bottom Row */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Task Activity */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.7 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
             >
               <TaskActivity />
             </motion.div>
-
-            {/* Crisis Support */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.7 }}
-            >
-              <CrisisSupport />
-            </motion.div>
           </div>
+
+          {/* Wellness Support - Full Width */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <CrisisSupport />
+          </motion.div>
         </div>
       </main>
     </div>

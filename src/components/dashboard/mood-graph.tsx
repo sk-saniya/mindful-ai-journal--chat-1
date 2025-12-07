@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MoodEntry {
   id: number;
@@ -31,7 +32,11 @@ const getMoodColor = (moodLabel: string): string => {
   return moodColors[mood]?.color || "#8B5CF6";
 };
 
-export const MoodGraph = () => {
+interface MoodGraphProps {
+  selectedMood?: string | null;
+}
+
+export const MoodGraph = ({ selectedMood }: MoodGraphProps) => {
   const [moodData, setMoodData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -73,8 +78,13 @@ export const MoodGraph = () => {
     }
   };
 
-  const averageMood = moodData.length > 0
-    ? (moodData.reduce((sum, entry) => sum + entry.mood, 0) / moodData.length).toFixed(1)
+  // Filter data based on selected mood
+  const filteredData = selectedMood
+    ? moodData.filter((entry) => entry.label.toLowerCase() === selectedMood.toLowerCase())
+    : moodData;
+
+  const averageMood = filteredData.length > 0
+    ? (filteredData.reduce((sum, entry) => sum + entry.mood, 0) / filteredData.length).toFixed(1)
     : "0";
 
   // Custom dot renderer with different colors
@@ -105,14 +115,14 @@ export const MoodGraph = () => {
 
   // Custom line segment with gradient colors
   const CustomLine = (props: any) => {
-    const { points, stroke } = props;
+    const { points } = props;
     if (!points || points.length < 2) return null;
 
     return (
       <g>
         {points.slice(0, -1).map((point: any, index: number) => {
           const nextPoint = points[index + 1];
-          const color = moodData[index]?.color || "#8B5CF6";
+          const color = filteredData[index]?.color || "#8B5CF6";
           
           return (
             <line
@@ -139,9 +149,23 @@ export const MoodGraph = () => {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Mood Trends
-          </h3>
+          <div className="flex items-center space-x-3">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Mood Trends
+            </h3>
+            {selectedMood && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="flex items-center space-x-2 px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20"
+              >
+                <Filter className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 capitalize">
+                  {selectedMood}
+                </span>
+              </motion.div>
+            )}
+          </div>
           <div className="flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20">
             <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
             <span className="text-sm font-semibold text-green-600 dark:text-green-400">
@@ -154,15 +178,17 @@ export const MoodGraph = () => {
           <div className="space-y-3">
             <Skeleton className="h-[300px] w-full" />
           </div>
-        ) : moodData.length === 0 ? (
+        ) : filteredData.length === 0 ? (
           <div className="h-[300px] flex items-center justify-center">
             <p className="text-gray-500 dark:text-gray-400">
-              No mood data yet. Start tracking to see your trends!
+              {selectedMood 
+                ? `No ${selectedMood} mood data yet. Try a different mood!`
+                : "No mood data yet. Start tracking to see your trends!"}
             </p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={moodData}>
+            <LineChart data={filteredData}>
               <defs>
                 {Object.entries(moodColors).map(([mood, { color }]) => (
                   <linearGradient key={mood} id={`gradient-${mood}`} x1="0" y1="0" x2="0" y2="1">
@@ -208,14 +234,16 @@ export const MoodGraph = () => {
           </ResponsiveContainer>
         )}
 
-        {moodData.length > 0 && (
+        {filteredData.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
             className="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center"
           >
-            Tracking {moodData.length} mood {moodData.length === 1 ? "entry" : "entries"} over the last 30 days
+            {selectedMood 
+              ? `Showing ${filteredData.length} ${selectedMood} ${filteredData.length === 1 ? "entry" : "entries"}`
+              : `Tracking ${filteredData.length} mood ${filteredData.length === 1 ? "entry" : "entries"} over the last 30 days`}
           </motion.div>
         )}
       </motion.div>

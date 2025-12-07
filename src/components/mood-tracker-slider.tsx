@@ -65,7 +65,11 @@ const moods = [
   },
 ];
 
-export const MoodTrackerSlider = () => {
+interface MoodTrackerSliderProps {
+  onMoodSelect?: (moodId: string) => void;
+}
+
+export const MoodTrackerSlider = ({ onMoodSelect }: MoodTrackerSliderProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -104,26 +108,34 @@ export const MoodTrackerSlider = () => {
     });
   };
 
+  const handleMoodChange = (index: number) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+    if (onMoodSelect) {
+      onMoodSelect(moods[index].id);
+    }
+  };
+
   const currentMood = moods[currentIndex];
   const MoodIcon = currentMood.icon;
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-12 px-4">
+    <div className="w-full max-w-4xl mx-auto py-8 px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-8"
+        className="text-center mb-6"
       >
-        <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+        <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
           How are you feeling today?
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-lg">
+        <p className="text-gray-600 dark:text-gray-400 text-sm">
           Swipe or click to explore different moods
         </p>
       </motion.div>
 
-      <div className="relative h-[400px] flex items-center justify-center">
+      <div className="relative h-[320px] flex items-center justify-center">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={currentIndex}
@@ -145,14 +157,20 @@ export const MoodTrackerSlider = () => {
 
               if (swipe < -swipeConfidenceThreshold) {
                 paginate(1);
+                if (onMoodSelect) {
+                  onMoodSelect(moods[(currentIndex + 1) % moods.length].id);
+                }
               } else if (swipe > swipeConfidenceThreshold) {
                 paginate(-1);
+                if (onMoodSelect) {
+                  onMoodSelect(moods[(currentIndex - 1 + moods.length) % moods.length].id);
+                }
               }
             }}
             className="absolute w-full max-w-md cursor-grab active:cursor-grabbing"
           >
             <Card
-              className={`${currentMood.bgColor} border-2 p-8 shadow-2xl hover:shadow-3xl transition-shadow duration-300`}
+              className={`${currentMood.bgColor} border-2 p-6 shadow-2xl hover:shadow-3xl transition-shadow duration-300`}
             >
               <motion.div
                 initial={{ scale: 0 }}
@@ -163,7 +181,7 @@ export const MoodTrackerSlider = () => {
                   damping: 20,
                   delay: 0.1,
                 }}
-                className="flex flex-col items-center space-y-6"
+                className="flex flex-col items-center space-y-4"
               >
                 <motion.div
                   animate={{
@@ -175,16 +193,16 @@ export const MoodTrackerSlider = () => {
                     repeat: Infinity,
                     repeatDelay: 1,
                   }}
-                  className={`p-8 rounded-full bg-gradient-to-br ${currentMood.color} shadow-lg`}
+                  className={`p-6 rounded-full bg-gradient-to-br ${currentMood.color} shadow-lg`}
                 >
-                  <MoodIcon className="h-20 w-20 text-white" strokeWidth={2} />
+                  <MoodIcon className="h-16 w-16 text-white" strokeWidth={2} />
                 </motion.div>
 
                 <motion.h3
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className={`text-3xl font-bold bg-gradient-to-br ${currentMood.color} bg-clip-text text-transparent`}
+                  className={`text-2xl font-bold bg-gradient-to-br ${currentMood.color} bg-clip-text text-transparent`}
                 >
                   {currentMood.label}
                 </motion.h3>
@@ -193,7 +211,7 @@ export const MoodTrackerSlider = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-gray-600 dark:text-gray-400 text-center"
+                  className="text-gray-600 dark:text-gray-400 text-center text-sm"
                 >
                   Track your {currentMood.label.toLowerCase()} moments and gain insights
                   into your emotional patterns
@@ -207,8 +225,14 @@ export const MoodTrackerSlider = () => {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => paginate(-1)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-12 w-12 rounded-full shadow-lg hover:scale-110 transition-transform"
+          onClick={() => {
+            paginate(-1);
+            if (onMoodSelect) {
+              const nextIndex = (currentIndex - 1 + moods.length) % moods.length;
+              onMoodSelect(moods[nextIndex].id);
+            }
+          }}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full shadow-lg hover:scale-110 transition-transform"
         >
           <motion.span
             initial={{ x: 0 }}
@@ -221,8 +245,14 @@ export const MoodTrackerSlider = () => {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => paginate(1)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-12 w-12 rounded-full shadow-lg hover:scale-110 transition-transform"
+          onClick={() => {
+            paginate(1);
+            if (onMoodSelect) {
+              const nextIndex = (currentIndex + 1) % moods.length;
+              onMoodSelect(moods[nextIndex].id);
+            }
+          }}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full shadow-lg hover:scale-110 transition-transform"
         >
           <motion.span
             initial={{ x: 0 }}
@@ -235,14 +265,11 @@ export const MoodTrackerSlider = () => {
       </div>
 
       {/* Mood Indicators */}
-      <div className="flex justify-center space-x-2 mt-8">
+      <div className="flex justify-center space-x-2 mt-6">
         {moods.map((mood, index) => (
           <button
             key={mood.id}
-            onClick={() => {
-              setDirection(index > currentIndex ? 1 : -1);
-              setCurrentIndex(index);
-            }}
+            onClick={() => handleMoodChange(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
               index === currentIndex
                 ? "w-8 bg-gradient-to-r " + mood.color
