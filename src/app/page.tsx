@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
-import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
+import { MoodCardSlider } from "@/components/mood-card-slider";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Brain, TrendingUp, Calendar } from "lucide-react";
 import Link from "next/link";
@@ -226,18 +226,16 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Mood Tracker Slider Section */}
+        {/* Draggable Mood Card Slider Section */}
         <section className="py-12 px-4">
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <MoodTrackerSlider hideSaveButton={true} />
-            </motion.div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <MoodCardSlider />
+          </motion.div>
         </section>
 
         {/* Features Grid */}
