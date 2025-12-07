@@ -83,19 +83,104 @@ export default function RegisterPage() {
     }
   };
 
+  // Varied colors for floating bubbles
+  const bubbleColors = [
+    "from-blue-400 to-cyan-400",
+    "from-purple-400 to-pink-400",
+    "from-green-400 to-emerald-400",
+    "from-yellow-400 to-orange-400",
+    "from-rose-400 to-red-400",
+    "from-indigo-400 to-purple-400",
+    "from-teal-400 to-cyan-400",
+    "from-fuchsia-400 to-pink-400",
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />
+        
+        {/* Animated gradient orbs */}
+        <motion.div
+          className="absolute top-0 left-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"
+          animate={{
+            x: [0, 100, 0],
+            y: [0, 50, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute top-1/4 right-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl"
+          animate={{
+            x: [0, -100, 0],
+            y: [0, 100, 0],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-0 left-1/3 w-96 h-96 bg-pink-400/20 rounded-full blur-3xl"
+          animate={{
+            x: [0, 50, 0],
+            y: [0, -50, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
+        {/* Floating particles with varied colors */}
+        {[...Array(20)].map((_, i) => {
+          const colorGradient = bubbleColors[i % bubbleColors.length];
+          return (
+            <motion.div
+              key={i}
+              className={`absolute w-3 h-3 bg-gradient-to-r ${colorGradient} rounded-full opacity-30`}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                x: [0, Math.random() * 20 - 10, 0],
+                opacity: [0.3, 0.6, 0.3],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 3 + Math.random() * 4,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+                ease: "easeInOut",
+              }}
+            />
+          );
+        })}
+      </div>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700"
+          className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700"
         >
           <motion.div
             initial={{ y: -10, opacity: 0 }}
@@ -163,7 +248,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">
+              <span className="px-2 bg-white/80 dark:bg-gray-800/80 text-gray-500">
                 Or continue with email
               </span>
             </div>
