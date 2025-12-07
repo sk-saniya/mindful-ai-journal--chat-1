@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface MoodEntry {
   id: number;
@@ -15,21 +14,21 @@ interface MoodEntry {
   createdAt: string;
 }
 
-// Mood color mapping with animated gradients
-const moodColors: Record<string, { color: string; gradient: string }> = {
-  anxious: { color: "#9CA3AF", gradient: "from-gray-400 to-gray-600" },
-  calm: { color: "#60A5FA", gradient: "from-blue-400 to-blue-600" },
-  happy: { color: "#FCD34D", gradient: "from-yellow-400 to-orange-500" },
-  sad: { color: "#A78BFA", gradient: "from-indigo-400 to-purple-600" },
-  stressed: { color: "#F87171", gradient: "from-red-400 to-red-600" },
-  peaceful: { color: "#34D399", gradient: "from-green-400 to-emerald-600" },
-  energetic: { color: "#FBBF24", gradient: "from-amber-400 to-orange-600" },
-  tired: { color: "#94A3B8", gradient: "from-slate-400 to-slate-600" },
+// Mood color mapping
+const moodColors: Record<string, string> = {
+  anxious: "#9CA3AF",
+  calm: "#60A5FA",
+  happy: "#FCD34D",
+  sad: "#A78BFA",
+  stressed: "#F87171",
+  peaceful: "#34D399",
+  energetic: "#FBBF24",
+  tired: "#94A3B8",
 };
 
 const getMoodColor = (moodLabel: string): string => {
   const mood = moodLabel.toLowerCase();
-  return moodColors[mood]?.color || "#8B5CF6";
+  return moodColors[mood] || "#8B5CF6";
 };
 
 interface MoodGraphProps {
@@ -93,51 +92,14 @@ export const MoodGraph = ({ selectedMood }: MoodGraphProps) => {
     if (!payload) return null;
 
     return (
-      <g>
-        <circle
-          cx={cx}
-          cy={cy}
-          r={6}
-          fill={payload.color}
-          stroke="#fff"
-          strokeWidth={2}
-        />
-        <circle
-          cx={cx}
-          cy={cy}
-          r={10}
-          fill={payload.color}
-          opacity={0.2}
-        />
-      </g>
-    );
-  };
-
-  // Custom line segment with gradient colors
-  const CustomLine = (props: any) => {
-    const { points } = props;
-    if (!points || points.length < 2) return null;
-
-    return (
-      <g>
-        {points.slice(0, -1).map((point: any, index: number) => {
-          const nextPoint = points[index + 1];
-          const color = filteredData[index]?.color || "#8B5CF6";
-          
-          return (
-            <line
-              key={index}
-              x1={point.x}
-              y1={point.y}
-              x2={nextPoint.x}
-              y2={nextPoint.y}
-              stroke={color}
-              strokeWidth={3}
-              strokeLinecap="round"
-            />
-          );
-        })}
-      </g>
+      <circle
+        cx={cx}
+        cy={cy}
+        r={4}
+        fill={payload.color}
+        stroke="#fff"
+        strokeWidth={2}
+      />
     );
   };
 
@@ -189,14 +151,6 @@ export const MoodGraph = ({ selectedMood }: MoodGraphProps) => {
         ) : (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={filteredData}>
-              <defs>
-                {Object.entries(moodColors).map(([mood, { color }]) => (
-                  <linearGradient key={mood} id={`gradient-${mood}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={color} stopOpacity={0.8} />
-                    <stop offset="95%" stopColor={color} stopOpacity={0.1} />
-                  </linearGradient>
-                ))}
-              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
               <XAxis
                 dataKey="date"
@@ -225,10 +179,9 @@ export const MoodGraph = ({ selectedMood }: MoodGraphProps) => {
                 type="monotone"
                 dataKey="mood"
                 stroke="#8B5CF6"
-                strokeWidth={0}
+                strokeWidth={3}
                 dot={<CustomDot />}
-                activeDot={{ r: 8 }}
-                shape={<CustomLine />}
+                activeDot={{ r: 6 }}
               />
             </LineChart>
           </ResponsiveContainer>

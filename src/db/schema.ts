@@ -117,3 +117,33 @@ export const breathingSessions = sqliteTable('breathing_sessions', {
   technique: text('technique').notNull(),
   createdAt: text('created_at').notNull(),
 });
+
+// Stress tracking table
+export const stressTracking = sqliteTable('stress_tracking', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  stressLevel: integer('stress_level').notNull(),
+  notes: text('notes'),
+  createdAt: text('created_at').notNull(),
+});
+
+// Sleep tracking table
+export const sleepTracking = sqliteTable('sleep_tracking', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  hoursSlept: integer('hours_slept').notNull(),
+  quality: integer('quality').notNull(),
+  notes: text('notes'),
+  sleepDate: text('sleep_date').notNull(),
+  createdAt: text('created_at').notNull(),
+});
+
+// Activity completions table
+export const activityCompletions = sqliteTable('activity_completions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  activityName: text('activity_name').notNull(),
+  completed: integer('completed', { mode: 'boolean' }).notNull(),
+  completionDate: text('completion_date').notNull(),
+  createdAt: text('created_at').notNull(),
+});

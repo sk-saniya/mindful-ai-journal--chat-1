@@ -10,6 +10,9 @@ import { BreathingExercise } from "@/components/dashboard/breathing-exercise";
 import { TaskActivity } from "@/components/dashboard/task-activity";
 import { CrisisSupport } from "@/components/dashboard/crisis-support";
 import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
+import { StressTracker } from "@/components/dashboard/stress-tracker";
+import { SleepTracker } from "@/components/dashboard/sleep-tracker";
+import { ActivityTracker } from "@/components/dashboard/activity-tracker";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
@@ -163,13 +166,40 @@ export default function DashboardPage() {
             <MoodGraph key={refreshKey} selectedMood={selectedMood} />
           </motion.div>
 
+          {/* New Trackers Grid - Stress, Sleep, Activity */}
+          <div className="grid lg:grid-cols-3 gap-6 mb-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <StressTracker />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+            >
+              <SleepTracker />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <ActivityTracker />
+            </motion.div>
+          </div>
+
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-2 gap-6 mb-6">
             {/* Breathing Exercise */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.45 }}
             >
               <BreathingExercise />
             </motion.div>
@@ -178,7 +208,7 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.45 }}
             >
               <TaskActivity />
             </motion.div>
@@ -188,7 +218,7 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
           >
             <CrisisSupport />
           </motion.div>
