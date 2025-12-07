@@ -16,12 +16,18 @@ export default function DashboardPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!isPending && !session?.user) {
       router.push("/login");
     }
   }, [session, isPending, router]);
+
+  const handleMoodSaved = () => {
+    // Refresh the graph by updating the key
+    setRefreshKey((prev) => prev + 1);
+  };
 
   if (isPending) {
     return (
@@ -74,7 +80,10 @@ export default function DashboardPage() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mb-6"
           >
-            <MoodTrackerSlider onMoodSelect={setSelectedMood} />
+            <MoodTrackerSlider 
+              onMoodSelect={setSelectedMood} 
+              onMoodSaved={handleMoodSaved}
+            />
           </motion.div>
 
           {/* Mood Graph - Full Width with Filtering */}
@@ -84,7 +93,7 @@ export default function DashboardPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-6"
           >
-            <MoodGraph selectedMood={selectedMood} />
+            <MoodGraph key={refreshKey} selectedMood={selectedMood} />
           </motion.div>
 
           {/* Main Content Grid */}

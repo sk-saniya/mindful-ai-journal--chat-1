@@ -2,282 +2,276 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Smile, Frown, Meh, Heart, Zap, Moon, Sun, Cloud } from "lucide-react";
+import { Smile, Frown, Meh, Heart, Zap, Moon, Cloud, Save, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 
 const moods = [
   {
+    id: "sad",
+    label: "Very Low",
+    value: 2,
+    icon: Frown,
+    color: "from-indigo-400 to-purple-600",
+    textColor: "text-indigo-600 dark:text-indigo-400",
+    emoji: "😢",
+  },
+  {
     id: "anxious",
-    label: "Anxious",
+    label: "Low",
+    value: 4,
     icon: Cloud,
     color: "from-gray-400 to-gray-600",
-    bgColor: "bg-gray-50 dark:bg-gray-800",
+    textColor: "text-gray-600 dark:text-gray-400",
+    emoji: "😟",
   },
   {
     id: "calm",
-    label: "Calm",
-    icon: Moon,
+    label: "Neutral",
+    value: 5,
+    icon: Meh,
     color: "from-blue-400 to-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    textColor: "text-blue-600 dark:text-blue-400",
+    emoji: "😐",
   },
   {
     id: "happy",
-    label: "Happy",
+    label: "Good",
+    value: 7,
     icon: Smile,
     color: "from-yellow-400 to-orange-500",
-    bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
-  },
-  {
-    id: "sad",
-    label: "Sad",
-    icon: Frown,
-    color: "from-indigo-400 to-purple-600",
-    bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
-  },
-  {
-    id: "stressed",
-    label: "Stressed",
-    icon: Zap,
-    color: "from-red-400 to-red-600",
-    bgColor: "bg-red-50 dark:bg-red-900/20",
-  },
-  {
-    id: "peaceful",
-    label: "Peaceful",
-    icon: Heart,
-    color: "from-green-400 to-emerald-600",
-    bgColor: "bg-green-50 dark:bg-green-900/20",
+    textColor: "text-yellow-600 dark:text-yellow-400",
+    emoji: "😊",
   },
   {
     id: "energetic",
-    label: "Energetic",
-    icon: Sun,
-    color: "from-amber-400 to-orange-600",
-    bgColor: "bg-amber-50 dark:bg-amber-900/20",
-  },
-  {
-    id: "tired",
-    label: "Tired",
-    icon: Meh,
-    color: "from-slate-400 to-slate-600",
-    bgColor: "bg-slate-50 dark:bg-slate-800",
+    label: "Excellent",
+    value: 10,
+    icon: Zap,
+    color: "from-green-400 to-emerald-600",
+    textColor: "text-green-600 dark:text-green-400",
+    emoji: "🤩",
   },
 ];
 
 interface MoodTrackerSliderProps {
   onMoodSelect?: (moodId: string) => void;
+  onMoodSaved?: () => void;
 }
 
-export const MoodTrackerSlider = ({ onMoodSelect }: MoodTrackerSliderProps) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
+export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved }: MoodTrackerSliderProps) => {
+  const [currentIndex, setCurrentIndex] = useState(2); // Start at Neutral
+  const [isSaving, setIsSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0,
-      scale: 0.8,
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-      scale: 1,
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
-      opacity: 0,
-      scale: 0.8,
-    }),
-  };
+  const currentMood = moods[currentIndex];
 
-  const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset: number, velocity: number) => {
-    return Math.abs(offset) * velocity;
-  };
-
-  const paginate = (newDirection: number) => {
-    setDirection(newDirection);
-    setCurrentIndex((prevIndex) => {
-      let nextIndex = prevIndex + newDirection;
-      if (nextIndex < 0) nextIndex = moods.length - 1;
-      if (nextIndex >= moods.length) nextIndex = 0;
-      return nextIndex;
-    });
-  };
-
-  const handleMoodChange = (index: number) => {
-    setDirection(index > currentIndex ? 1 : -1);
-    setCurrentIndex(index);
+  const handleSliderChange = (value: number) => {
+    setCurrentIndex(value);
+    setJustSaved(false);
     if (onMoodSelect) {
-      onMoodSelect(moods[index].id);
+      onMoodSelect(moods[value].id);
     }
   };
 
-  const currentMood = moods[currentIndex];
-  const MoodIcon = currentMood.icon;
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem("bearer_token");
+      const response = await fetch("/api/mood-tracking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          moodValue: currentMood.value,
+          moodLabel: currentMood.id,
+          notes: `Feeling ${currentMood.label.toLowerCase()} today`,
+        }),
+      });
+
+      if (response.ok) {
+        setJustSaved(true);
+        toast.success(`Mood saved: ${currentMood.label}! 🎉`);
+        
+        // Call the callback to refresh graph
+        if (onMoodSaved) {
+          onMoodSaved();
+        }
+
+        // Reset the "just saved" state after animation
+        setTimeout(() => setJustSaved(false), 3000);
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to save mood");
+      }
+    } catch (error) {
+      toast.error("Failed to save mood");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-8 px-4">
+    <Card className="w-full max-w-4xl mx-auto p-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border-gray-200 dark:border-gray-700 shadow-xl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-6"
+        className="text-center"
       >
+        {/* Animated Emoji */}
+        <motion.div
+          key={currentMood.emoji}
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 200, 
+            damping: 15 
+          }}
+          className="text-7xl mb-4 inline-block"
+        >
+          {currentMood.emoji}
+        </motion.div>
+
+        {/* Title */}
         <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
           How are you feeling today?
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-sm">
-          Swipe or click to explore different moods
+        
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-8">
+          Track your mood daily and discover patterns in your emotional wellness
         </p>
-      </motion.div>
 
-      <div className="relative h-[320px] flex items-center justify-center">
-        <AnimatePresence initial={false} custom={direction}>
+        {/* Slider Container */}
+        <div className="relative px-4 mb-8">
+          {/* Slider Track */}
+          <div className="relative h-2 bg-gradient-to-r from-indigo-200 via-blue-200 via-yellow-200 via-orange-200 to-green-200 dark:from-indigo-900 dark:via-blue-900 dark:via-yellow-900 dark:via-orange-900 dark:to-green-900 rounded-full mb-3">
+            {/* Active Track */}
+            <motion.div
+              className={`absolute h-2 rounded-full bg-gradient-to-r ${currentMood.color}`}
+              initial={{ width: "0%" }}
+              animate={{ 
+                width: `${(currentIndex / (moods.length - 1)) * 100}%`,
+              }}
+              transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            />
+          </div>
+
+          {/* Slider Input */}
+          <input
+            type="range"
+            min="0"
+            max={moods.length - 1}
+            value={currentIndex}
+            onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+            className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer z-10"
+            style={{ margin: "0 16px", width: "calc(100% - 32px)" }}
+          />
+
+          {/* Slider Thumb */}
           <motion.div
-            key={currentIndex}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-gray-800 rounded-full shadow-lg border-4 pointer-events-none z-20"
+            style={{
+              borderColor: `transparent`,
+              left: `calc(${(currentIndex / (moods.length - 1)) * 100}% + 16px)`,
+            }}
+            animate={{
+              scale: [1, 1.2, 1],
+            }}
             transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 },
-              scale: { duration: 0.2 },
+              duration: 0.3,
             }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={(e, { offset, velocity }) => {
-              const swipe = swipePower(offset.x, velocity.x);
-
-              if (swipe < -swipeConfidenceThreshold) {
-                paginate(1);
-                if (onMoodSelect) {
-                  onMoodSelect(moods[(currentIndex + 1) % moods.length].id);
-                }
-              } else if (swipe > swipeConfidenceThreshold) {
-                paginate(-1);
-                if (onMoodSelect) {
-                  onMoodSelect(moods[(currentIndex - 1 + moods.length) % moods.length].id);
-                }
-              }
-            }}
-            className="absolute w-full max-w-md cursor-grab active:cursor-grabbing"
           >
-            <Card
-              className={`${currentMood.bgColor} border-2 p-6 shadow-2xl hover:shadow-3xl transition-shadow duration-300`}
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                  delay: 0.1,
-                }}
-                className="flex flex-col items-center space-y-4"
+            <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${currentMood.color} -z-10`} />
+          </motion.div>
+
+          {/* Labels */}
+          <div className="flex justify-between text-xs font-medium text-gray-600 dark:text-gray-400 mt-6">
+            {moods.map((mood) => (
+              <button
+                key={mood.id}
+                onClick={() => handleSliderChange(moods.indexOf(mood))}
+                className={`transition-colors hover:text-gray-900 dark:hover:text-white ${
+                  currentMood.id === mood.id ? currentMood.textColor + " font-bold" : ""
+                }`}
               >
-                <motion.div
-                  animate={{
-                    rotate: [0, 10, -10, 10, 0],
-                    scale: [1, 1.1, 1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                  }}
-                  className={`p-6 rounded-full bg-gradient-to-br ${currentMood.color} shadow-lg`}
-                >
-                  <MoodIcon className="h-16 w-16 text-white" strokeWidth={2} />
-                </motion.div>
+                {mood.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-                <motion.h3
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className={`text-2xl font-bold bg-gradient-to-br ${currentMood.color} bg-clip-text text-transparent`}
-                >
-                  {currentMood.label}
-                </motion.h3>
-
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-gray-600 dark:text-gray-400 text-center text-sm"
-                >
-                  Track your {currentMood.label.toLowerCase()} moments and gain insights
-                  into your emotional patterns
-                </motion.p>
-              </motion.div>
-            </Card>
+        {/* Current Mood Display */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentMood.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="mb-6"
+          >
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              You're feeling:{" "}
+              <span className={`bg-gradient-to-r ${currentMood.color} bg-clip-text text-transparent`}>
+                {currentMood.label}
+              </span>
+            </p>
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Buttons */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => {
-            paginate(-1);
-            if (onMoodSelect) {
-              const nextIndex = (currentIndex - 1 + moods.length) % moods.length;
-              onMoodSelect(moods[nextIndex].id);
-            }
-          }}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full shadow-lg hover:scale-110 transition-transform"
+        {/* Save Button */}
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <motion.span
-            initial={{ x: 0 }}
-            animate={{ x: [-3, 0, -3] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || justSaved}
+            size="lg"
+            className={`
+              px-8 py-6 text-lg font-semibold rounded-full shadow-lg transition-all
+              ${justSaved
+                ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                : "bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700"
+              }
+            `}
           >
-            ←
-          </motion.span>
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => {
-            paginate(1);
-            if (onMoodSelect) {
-              const nextIndex = (currentIndex + 1) % moods.length;
-              onMoodSelect(moods[nextIndex].id);
-            }
-          }}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full shadow-lg hover:scale-110 transition-transform"
-        >
-          <motion.span
-            initial={{ x: 0 }}
-            animate={{ x: [3, 0, 3] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            →
-          </motion.span>
-        </Button>
-      </div>
-
-      {/* Mood Indicators */}
-      <div className="flex justify-center space-x-2 mt-6">
-        {moods.map((mood, index) => (
-          <button
-            key={mood.id}
-            onClick={() => handleMoodChange(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              index === currentIndex
-                ? "w-8 bg-gradient-to-r " + mood.color
-                : "w-2 bg-gray-300 dark:bg-gray-600"
-            }`}
-          />
-        ))}
-      </div>
-    </div>
+            {isSaving ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="mr-2"
+                >
+                  <Save className="h-5 w-5" />
+                </motion.div>
+                Saving...
+              </>
+            ) : justSaved ? (
+              <>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                >
+                  <Check className="h-5 w-5 mr-2 inline" />
+                </motion.div>
+                Saved!
+              </>
+            ) : (
+              <>
+                <Save className="h-5 w-5 mr-2" />
+                Save Mood
+              </>
+            )}
+          </Button>
+        </motion.div>
+      </motion.div>
+    </Card>
   );
 };
