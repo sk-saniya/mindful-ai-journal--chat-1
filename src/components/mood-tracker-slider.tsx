@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Smile, Frown, Meh, Heart, Zap, Moon, Cloud, Save, Check } from "lucide-react";
+import { Smile, Frown, Meh, Heart, Zap, Moon, Cloud, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -61,7 +61,7 @@ interface MoodTrackerSliderProps {
 }
 
 export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved }: MoodTrackerSliderProps) => {
-  const [currentIndex, setCurrentIndex] = useState(2); // Start at Neutral
+  const [currentIndex, setCurrentIndex] = useState(2);
   const [isSaving, setIsSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
 
@@ -96,12 +96,10 @@ export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved }: MoodTrackerSlid
         setJustSaved(true);
         toast.success(`Mood saved: ${currentMood.label}! 🎉`);
         
-        // Call the callback to refresh graph
         if (onMoodSaved) {
           onMoodSaved();
         }
 
-        // Reset the "just saved" state after animation
         setTimeout(() => setJustSaved(false), 3000);
       } else {
         const error = await response.json();
@@ -148,8 +146,8 @@ export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved }: MoodTrackerSlid
 
         {/* Slider Container */}
         <div className="relative px-4 mb-8">
-          {/* Slider Track */}
-          <div className="relative h-2 bg-gradient-to-r from-indigo-200 via-blue-200 via-yellow-200 via-orange-200 to-green-200 dark:from-indigo-900 dark:via-blue-900 dark:via-yellow-900 dark:via-orange-900 dark:to-green-900 rounded-full mb-3">
+          {/* Slider Track - Removed gradient colors, now neutral */}
+          <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full mb-3">
             {/* Active Track */}
             <motion.div
               className={`absolute h-2 rounded-full bg-gradient-to-r ${currentMood.color}`}
@@ -224,7 +222,7 @@ export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved }: MoodTrackerSlid
           </motion.div>
         </AnimatePresence>
 
-        {/* Save Button */}
+        {/* Save Button - Icon removed */}
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -242,32 +240,21 @@ export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved }: MoodTrackerSlid
             `}
           >
             {isSaving ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="mr-2"
-                >
-                  <Save className="h-5 w-5" />
-                </motion.div>
-                Saving...
-              </>
+              "Saving..."
             ) : justSaved ? (
               <>
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 200 }}
+                  className="mr-2 inline"
                 >
-                  <Check className="h-5 w-5 mr-2 inline" />
+                  <Check className="h-5 w-5 inline" />
                 </motion.div>
                 Saved!
               </>
             ) : (
-              <>
-                <Save className="h-5 w-5 mr-2" />
-                Save Mood
-              </>
+              "Save Mood"
             )}
           </Button>
         </motion.div>
