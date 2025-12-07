@@ -14,6 +14,23 @@ interface MoodEntry {
   createdAt: string;
 }
 
+// Mood color mapping with animated gradients
+const moodColors: Record<string, { color: string; gradient: string }> = {
+  anxious: { color: "#9CA3AF", gradient: "from-gray-400 to-gray-600" },
+  calm: { color: "#60A5FA", gradient: "from-blue-400 to-blue-600" },
+  happy: { color: "#FCD34D", gradient: "from-yellow-400 to-orange-500" },
+  sad: { color: "#A78BFA", gradient: "from-indigo-400 to-purple-600" },
+  stressed: { color: "#F87171", gradient: "from-red-400 to-red-600" },
+  peaceful: { color: "#34D399", gradient: "from-green-400 to-emerald-600" },
+  energetic: { color: "#FBBF24", gradient: "from-amber-400 to-orange-600" },
+  tired: { color: "#94A3B8", gradient: "from-slate-400 to-slate-600" },
+};
+
+const getMoodColor = (moodLabel: string): string => {
+  const mood = moodLabel.toLowerCase();
+  return moodColors[mood]?.color || "#8B5CF6";
+};
+
 export const MoodGraph = () => {
   const [moodData, setMoodData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +61,7 @@ export const MoodGraph = () => {
             }),
             mood: entry.moodValue,
             label: entry.moodLabel,
+            color: getMoodColor(entry.moodLabel),
           }));
 
         setMoodData(chartData);
@@ -58,6 +76,60 @@ export const MoodGraph = () => {
   const averageMood = moodData.length > 0
     ? (moodData.reduce((sum, entry) => sum + entry.mood, 0) / moodData.length).toFixed(1)
     : "0";
+
+  // Custom dot renderer with different colors
+  const CustomDot = (props: any) => {
+    const { cx, cy, payload } = props;
+    if (!payload) return null;
+
+    return (
+      <g>
+        <circle
+          cx={cx}
+          cy={cy}
+          r={6}
+          fill={payload.color}
+          stroke="#fff"
+          strokeWidth={2}
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={10}
+          fill={payload.color}
+          opacity={0.2}
+        />
+      </g>
+    );
+  };
+
+  // Custom line segment with gradient colors
+  const CustomLine = (props: any) => {
+    const { points, stroke } = props;
+    if (!points || points.length < 2) return null;
+
+    return (
+      <g>
+        {points.slice(0, -1).map((point: any, index: number) => {
+          const nextPoint = points[index + 1];
+          const color = moodData[index]?.color || "#8B5CF6";
+          
+          return (
+            <line
+              key={index}
+              x1={point.x}
+              y1={point.y}
+              x2={nextPoint.x}
+              y2={nextPoint.y}
+              stroke={color}
+              strokeWidth={3}
+              strokeLinecap="round"
+            />
+          );
+        })}
+      </g>
+    );
+  };
 
   return (
     <Card className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700">
@@ -90,12 +162,14 @@ export const MoodGraph = () => {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={moodData}>
+            <LineChart data={moodData}>
               <defs>
-                <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
-                </linearGradient>
+                {Object.entries(moodColors).map(([mood, { color }]) => (
+                  <linearGradient key={mood} id={`gradient-${mood}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                    <stop offset="95%" stopColor={color} stopOpacity={0.1} />
+                  </linearGradient>
+                ))}
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
               <XAxis
@@ -110,21 +184,27 @@ export const MoodGraph = () => {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
                   border: "1px solid #e5e7eb",
                   borderRadius: "8px",
                   padding: "8px 12px",
                 }}
                 labelStyle={{ fontWeight: "bold", marginBottom: "4px" }}
+                formatter={(value: any, name: any, props: any) => [
+                  `${value}/10 - ${props.payload.label}`,
+                  "Mood"
+                ]}
               />
-              <Area
+              <Line
                 type="monotone"
                 dataKey="mood"
                 stroke="#8B5CF6"
-                strokeWidth={3}
-                fill="url(#moodGradient)"
+                strokeWidth={0}
+                dot={<CustomDot />}
+                activeDot={{ r: 8 }}
+                shape={<CustomLine />}
               />
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         )}
 

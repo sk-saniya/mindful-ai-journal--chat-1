@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Phone, MessageCircle, Heart, ExternalLink } from "lucide-react";
+import { AlertTriangle, Phone, MessageCircle, Heart } from "lucide-react";
 import { toast } from "sonner";
 
 export const CrisisSupport = () => {
@@ -29,7 +29,7 @@ export const CrisisSupport = () => {
             <AlertTriangle className="h-6 w-6 text-white" />
           </motion.div>
           <h3 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-            Crisis Support
+            Wellness Support
           </h3>
         </div>
 
@@ -132,15 +132,6 @@ export const CrisisSupport = () => {
             </div>
           </div>
         </motion.div>
-
-        <Button
-          variant="outline"
-          className="w-full mt-4"
-          onClick={() => window.open("https://www.samhsa.gov/find-help/national-helpline", "_blank")}
-        >
-          Find More Resources
-          <ExternalLink className="h-4 w-4 ml-2" />
-        </Button>
       </motion.div>
     </Card>
   );

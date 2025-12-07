@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -17,6 +17,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   BookOpen,
   Plus,
@@ -26,6 +33,15 @@ import {
   Calendar,
   FileText,
   Sparkles,
+  Smile,
+  Frown,
+  Meh,
+  Heart,
+  Cloud,
+  Zap,
+  Moon,
+  Sun,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +53,30 @@ interface JournalEntry {
   updatedAt: string;
 }
 
+const moods = [
+  { id: "happy", label: "Happy", icon: Smile, color: "from-yellow-400 to-orange-500" },
+  { id: "sad", label: "Sad", icon: Frown, color: "from-indigo-400 to-purple-600" },
+  { id: "calm", label: "Calm", icon: Moon, color: "from-blue-400 to-blue-600" },
+  { id: "anxious", label: "Anxious", icon: Cloud, color: "from-gray-400 to-gray-600" },
+  { id: "stressed", label: "Stressed", icon: Zap, color: "from-red-400 to-red-600" },
+  { id: "peaceful", label: "Peaceful", icon: Heart, color: "from-green-400 to-emerald-600" },
+  { id: "energetic", label: "Energetic", icon: Sun, color: "from-amber-400 to-orange-600" },
+  { id: "tired", label: "Tired", icon: Meh, color: "from-slate-400 to-slate-600" },
+];
+
+const suggestedTags = [
+  "Personal Growth",
+  "Gratitude",
+  "Goals",
+  "Reflection",
+  "Challenges",
+  "Achievements",
+  "Relationships",
+  "Work",
+  "Health",
+  "Mindfulness",
+];
+
 export default function JournalPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
@@ -47,6 +87,9 @@ export default function JournalPage() {
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [selectedMood, setSelectedMood] = useState<string>("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [customTag, setCustomTag] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -94,6 +137,8 @@ export default function JournalPage() {
       setEditingEntry(null);
       setTitle("");
       setContent("");
+      setSelectedMood("");
+      setSelectedTags([]);
     }
     setIsDialogOpen(true);
   };
@@ -103,6 +148,25 @@ export default function JournalPage() {
     setEditingEntry(null);
     setTitle("");
     setContent("");
+    setSelectedMood("");
+    setSelectedTags([]);
+  };
+
+  const addTag = (tag: string) => {
+    if (tag && !selectedTags.includes(tag)) {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setSelectedTags(selectedTags.filter((t) => t !== tag));
+  };
+
+  const addCustomTag = () => {
+    if (customTag.trim()) {
+      addTag(customTag.trim());
+      setCustomTag("");
+    }
   };
 
   const saveEntry = async () => {
@@ -203,6 +267,8 @@ export default function JournalPage() {
   if (!session?.user) {
     return null;
   }
+
+  const selectedMoodData = moods.find((m) => m.id === selectedMood);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -412,7 +478,7 @@ export default function JournalPage() {
       <AnimatePresence>
         {isDialogOpen && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh]">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center space-x-2">
                   <Sparkles className="h-5 w-5 text-purple-500" />
@@ -434,6 +500,93 @@ export default function JournalPage() {
                     placeholder="Give your entry a title..."
                     autoFocus
                   />
+                </div>
+
+                {/* Mood Selector */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">How are you feeling?</label>
+                  <Select value={selectedMood} onValueChange={setSelectedMood}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select your mood...">
+                        {selectedMoodData && (
+                          <div className="flex items-center space-x-2">
+                            <selectedMoodData.icon className="h-4 w-4" />
+                            <span>{selectedMoodData.label}</span>
+                          </div>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {moods.map((mood) => (
+                        <SelectItem key={mood.id} value={mood.id}>
+                          <div className="flex items-center space-x-2">
+                            <mood.icon className="h-4 w-4" />
+                            <span>{mood.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Tags Section */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Tags</label>
+                  
+                  {/* Selected Tags */}
+                  {selectedTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {selectedTags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="flex items-center space-x-1 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-700 dark:text-blue-300"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            onClick={() => removeTag(tag)}
+                            className="ml-1 hover:bg-red-200 dark:hover:bg-red-900/30 rounded-full"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Custom Tag Input */}
+                  <div className="flex space-x-2 mb-3">
+                    <Input
+                      value={customTag}
+                      onChange={(e) => setCustomTag(e.target.value)}
+                      placeholder="Add custom tag..."
+                      onKeyDown={(e) => e.key === "Enter" && addCustomTag()}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addCustomTag}
+                      disabled={!customTag.trim()}
+                    >
+                      Add
+                    </Button>
+                  </div>
+
+                  {/* Suggested Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedTags
+                      .filter((tag) => !selectedTags.includes(tag))
+                      .map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                          onClick={() => addTag(tag)}
+                        >
+                          + {tag}
+                        </Badge>
+                      ))}
+                  </div>
                 </div>
 
                 <div>

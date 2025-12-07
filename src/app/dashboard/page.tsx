@@ -11,6 +11,7 @@ import { TaskActivity } from "@/components/dashboard/task-activity";
 import { StressLevel } from "@/components/dashboard/stress-level";
 import { SleepLevel } from "@/components/dashboard/sleep-level";
 import { CrisisSupport } from "@/components/dashboard/crisis-support";
+import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, Activity, Heart } from "lucide-react";
@@ -120,6 +121,16 @@ export default function DashboardPage() {
               </Card>
             </motion.div>
           </div>
+
+          {/* Mood Tracker Slider Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="mb-6"
+          >
+            <MoodTrackerSlider />
+          </motion.div>
 
           {/* Main Dashboard Grid */}
           <div className="grid lg:grid-cols-2 gap-6 mb-6">
