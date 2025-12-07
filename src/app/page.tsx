@@ -49,6 +49,45 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
+              {/* Animated Brain Icon Above Title */}
+              <motion.div
+                className="flex justify-center mb-8"
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ 
+                  duration: 1,
+                  type: "spring",
+                  stiffness: 100
+                }}
+              >
+                <motion.div
+                  animate={{ 
+                    y: [0, -10, 0],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ 
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="relative"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full blur-2xl opacity-40"
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      opacity: [0.4, 0.6, 0.4]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  <Brain className="h-24 w-24 text-purple-600 dark:text-purple-400 relative z-10" />
+                </motion.div>
+              </motion.div>
+
               <motion.h1
                 className="text-5xl md:text-7xl font-bold mb-6"
                 initial={{ scale: 0.5, opacity: 0 }}
