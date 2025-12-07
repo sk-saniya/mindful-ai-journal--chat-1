@@ -8,25 +8,15 @@ import { Navigation } from "@/components/navigation";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { User, Mail, Calendar, Lock, Bell, Eye, EyeOff, Loader2 } from "lucide-react";
+import { User, Mail, Calendar, Bell } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [mounted, setMounted] = useState(false);
-  
-  // Password change state
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
   
   // Notification preferences
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -40,46 +30,6 @@ export default function ProfilePage() {
       router.push("/login");
     }
   }, [session, isPending, router]);
-
-  const handlePasswordChange = async () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error("Please fill in all password fields");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error("New passwords do not match");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    setIsChangingPassword(true);
-
-    try {
-      const { error } = await authClient.changePassword({
-        currentPassword,
-        newPassword,
-        revokeOtherSessions: false,
-      });
-
-      if (error) {
-        toast.error("Failed to change password. Please check your current password.");
-      } else {
-        toast.success("Password changed successfully!");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      }
-    } catch (error) {
-      toast.error("An error occurred. Please try again.");
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
 
   const handleNotificationUpdate = (type: string, value: boolean) => {
     // In a real app, this would save to backend
@@ -281,118 +231,11 @@ export default function ProfilePage() {
               </Card>
             </motion.div>
 
-            {/* Password Change */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Card className="p-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border-gray-200 dark:border-gray-700 shadow-xl">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="p-3 rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
-                    <Lock className="h-6 w-6 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    Change Password
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="currentPassword" className="text-sm font-medium mb-2 block">
-                      Current Password
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="currentPassword"
-                        type={showCurrentPassword ? "text" : "password"}
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        placeholder="Enter current password"
-                        autoComplete="off"
-                        className="bg-white/50 dark:bg-gray-900/50 pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="newPassword" className="text-sm font-medium mb-2 block">
-                      New Password
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="newPassword"
-                        type={showNewPassword ? "text" : "password"}
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter new password (min 6 characters)"
-                        autoComplete="off"
-                        className="bg-white/50 dark:bg-gray-900/50 pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="confirmPassword" className="text-sm font-medium mb-2 block">
-                      Confirm New Password
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="confirmPassword"
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm new password"
-                        autoComplete="off"
-                        className="bg-white/50 dark:bg-gray-900/50 pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={handlePasswordChange}
-                    disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                  >
-                    {isChangingPassword ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Changing Password...
-                      </>
-                    ) : (
-                      "Change Password"
-                    )}
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-
             {/* Notification Preferences */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Card className="p-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border-gray-200 dark:border-gray-700 shadow-xl">
                 <div className="flex items-center space-x-3 mb-6">
