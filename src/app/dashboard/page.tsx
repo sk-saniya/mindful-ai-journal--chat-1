@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Navigation } from "@/components/navigation";
-import { MoodGraph } from "@/components/dashboard/mood-graph";
+import { MoodTrends } from "@/components/dashboard/mood-trends";
 import { BreathingExercise } from "@/components/dashboard/breathing-exercise";
-import { TaskActivity } from "@/components/dashboard/task-activity";
+import { GoalsTracker } from "@/components/dashboard/goals-tracker";
+import { MeditationTracker } from "@/components/dashboard/meditation-tracker";
+import { GuidedMeditationPlayer } from "@/components/dashboard/guided-meditation-player";
 import { CrisisSupport } from "@/components/dashboard/crisis-support";
 import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
 import { StressTracker } from "@/components/dashboard/stress-tracker";
@@ -173,14 +175,14 @@ export default function DashboardPage() {
             />
           </motion.div>
 
-          {/* Mood Graph - Full Width with Filtering */}
+          {/* Mood Trends - Full Width with Weekly/Monthly Selector */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-6"
           >
-            <MoodGraph key={refreshKey} selectedMood={selectedMood} />
+            <MoodTrends key={refreshKey} selectedMood={selectedMood} />
           </motion.div>
 
           {/* New Trackers Grid - Stress, Sleep, Activity */}
@@ -210,24 +212,43 @@ export default function DashboardPage() {
             </motion.div>
           </div>
 
+          {/* Goals and Meditation Trackers */}
+          <div className="grid lg:grid-cols-2 gap-6 mb-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.45 }}
+            >
+              <GoalsTracker />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.45 }}
+            >
+              <MeditationTracker />
+            </motion.div>
+          </div>
+
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-2 gap-6 mb-6">
             {/* Breathing Exercise */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.45 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
             >
               <BreathingExercise />
             </motion.div>
 
-            {/* Task Activity */}
+            {/* Guided Meditation Player */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.45 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <TaskActivity />
+              <GuidedMeditationPlayer />
             </motion.div>
           </div>
 
@@ -235,7 +256,7 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.55 }}
           >
             <CrisisSupport />
           </motion.div>

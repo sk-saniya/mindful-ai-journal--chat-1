@@ -147,3 +147,25 @@ export const activityCompletions = sqliteTable('activity_completions', {
   completionDate: text('completion_date').notNull(),
   createdAt: text('created_at').notNull(),
 });
+
+// Goals table
+export const goals = sqliteTable('goals', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description'),
+  status: text('status').notNull().default('active'),
+  targetDate: text('target_date'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+// Meditation sessions table
+export const meditationSessions = sqliteTable('meditation_sessions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  duration: integer('duration').notNull(),
+  type: text('type').notNull(),
+  completed: integer('completed', { mode: 'boolean' }).notNull(),
+  createdAt: text('created_at').notNull(),
+});
