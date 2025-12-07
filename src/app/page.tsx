@@ -235,7 +235,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <MoodTrackerSlider />
+              <MoodTrackerSlider hideSaveButton={true} />
             </motion.div>
           </div>
         </section>

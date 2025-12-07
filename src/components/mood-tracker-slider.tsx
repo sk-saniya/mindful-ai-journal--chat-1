@@ -58,9 +58,10 @@ const moods = [
 interface MoodTrackerSliderProps {
   onMoodSelect?: (moodId: string) => void;
   onMoodSaved?: () => void;
+  hideSaveButton?: boolean;
 }
 
-export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved }: MoodTrackerSliderProps) => {
+export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved, hideSaveButton = false }: MoodTrackerSliderProps) => {
   const [currentIndex, setCurrentIndex] = useState(2);
   const [isSaving, setIsSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
@@ -222,42 +223,44 @@ export const MoodTrackerSlider = ({ onMoodSelect, onMoodSaved }: MoodTrackerSlid
           </motion.div>
         </AnimatePresence>
 
-        {/* Save Button - Icon removed */}
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Button
-            onClick={handleSave}
-            disabled={isSaving || justSaved}
-            size="lg"
-            className={`
-              px-8 py-6 text-lg font-semibold rounded-full shadow-lg transition-all
-              ${justSaved
-                ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-                : "bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700"
-              }
-            `}
+        {/* Save Button - Conditionally rendered */}
+        {!hideSaveButton && (
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {isSaving ? (
-              "Saving..."
-            ) : justSaved ? (
-              <>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200 }}
-                  className="mr-2 inline"
-                >
-                  <Check className="h-5 w-5 inline" />
-                </motion.div>
-                Saved!
-              </>
-            ) : (
-              "Save Mood"
-            )}
-          </Button>
-        </motion.div>
+            <Button
+              onClick={handleSave}
+              disabled={isSaving || justSaved}
+              size="lg"
+              className={`
+                px-8 py-6 text-lg font-semibold rounded-full shadow-lg transition-all
+                ${justSaved
+                  ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                  : "bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700"
+                }
+              `}
+            >
+              {isSaving ? (
+                "Saving..."
+              ) : justSaved ? (
+                <>
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200 }}
+                    className="mr-2 inline"
+                  >
+                    <Check className="h-5 w-5 inline" />
+                  </motion.div>
+                  Saved!
+                </>
+              ) : (
+                "Save Mood"
+              )}
+            </Button>
+          </motion.div>
+        )}
       </motion.div>
     </Card>
   );
