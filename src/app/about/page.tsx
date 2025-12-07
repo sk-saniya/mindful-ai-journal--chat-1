@@ -37,6 +37,18 @@ export default function AboutPage() {
     },
   ];
 
+  // Varied colors for floating bubbles
+  const bubbleColors = [
+    "from-blue-400 to-cyan-400",
+    "from-purple-400 to-pink-400",
+    "from-green-400 to-emerald-400",
+    "from-yellow-400 to-orange-400",
+    "from-rose-400 to-red-400",
+    "from-indigo-400 to-purple-400",
+    "from-teal-400 to-cyan-400",
+    "from-fuchsia-400 to-pink-400",
+  ];
+
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       {/* Animated Background */}
@@ -84,27 +96,32 @@ export default function AboutPage() {
           }}
         />
 
-        {/* Floating particles */}
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-20"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.2, 0.5, 0.2],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
+        {/* Floating particles with varied colors */}
+        {[...Array(20)].map((_, i) => {
+          const colorGradient = bubbleColors[i % bubbleColors.length];
+          return (
+            <motion.div
+              key={i}
+              className={`absolute w-3 h-3 bg-gradient-to-r ${colorGradient} rounded-full opacity-30`}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                x: [0, Math.random() * 20 - 10, 0],
+                opacity: [0.3, 0.6, 0.3],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 3 + Math.random() * 4,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+                ease: "easeInOut",
+              }}
+            />
+          );
+        })}
       </div>
 
       <Navigation />
