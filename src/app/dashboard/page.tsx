@@ -17,7 +17,7 @@ import { ActivityTracker } from "@/components/dashboard/activity-tracker";
 import { MoodTrackerSlider } from "@/components/mood-tracker-slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import { Brain, Moon, Activity, TrendingUp } from "lucide-react";
+import { Brain, Moon, Activity, TrendingUp, User, Mail } from "lucide-react";
 
 interface StressEntry {
   id: number;
@@ -216,41 +216,81 @@ export default function DashboardPage() {
 
       <main className="flex-1 pt-16 px-4 py-8 relative z-10">
         <div className="max-w-7xl mx-auto">
-          {/* Welcome Header */}
+          {/* Top Section: Welcome Header & Profile - Side by side */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-6"
+            className="grid lg:grid-cols-3 gap-6 mb-6"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-2">
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Welcome back, {session.user.name}
-              </span>
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Track your wellness journey and discover insights
-            </p>
-          </motion.div>
+            {/* Welcome Header - Takes 2 columns */}
+            <div className="lg:col-span-2">
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Welcome back, {session.user.name}
+                </span>
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 text-lg mb-6">
+                Track your wellness journey and discover insights
+              </p>
 
-          {/* Mood Tracker Slider - Prominent Position */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-6"
-          >
-            <MoodTrackerSlider 
-              onMoodSelect={handleMoodSelect}
-              onMoodSaved={handleMoodSaved}
-            />
+              {/* Mood Tracker Slider - Moved here */}
+              <MoodTrackerSlider 
+                onMoodSelect={handleMoodSelect}
+                onMoodSaved={handleMoodSaved}
+              />
+            </div>
+
+            {/* Profile Card - Takes 1 column */}
+            <Card className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700 h-fit">
+              <div className="flex flex-col items-center text-center space-y-4">
+                {/* Profile Avatar */}
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-1">
+                    <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
+                      <User className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-gray-800" />
+                </div>
+
+                {/* User Info */}
+                <div className="w-full space-y-3">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                      {session.user.name}
+                    </h3>
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Mail className="h-4 w-4" />
+                      <span className="truncate">{session.user.email}</span>
+                    </div>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {stressRecords.length}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">Stress Logs</div>
+                    </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2">
+                      <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                        {sleepRecords.length}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">Sleep Logs</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </motion.div>
 
           {/* Wellness Summary Cards - 3 columns */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
             className="grid md:grid-cols-3 gap-6 mb-6"
           >
             {/* Stress Summary Card */}
@@ -389,54 +429,70 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
             className="mb-6"
           >
             <MoodTrends key={refreshKey} selectedMood={selectedMood} />
           </motion.div>
 
-          {/* Wellness Trackers Grid - 3 columns */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25 }}
-            className="grid lg:grid-cols-3 gap-6 mb-6"
-          >
-            <StressTracker />
-            <SleepTracker />
-            <ActivityTracker />
-          </motion.div>
+          {/* Main Content Grid - 2 columns */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Left Column - 2/3 width */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Wellness Trackers Grid - 3 columns */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="grid md:grid-cols-3 gap-6"
+              >
+                <StressTracker />
+                <SleepTracker />
+                <ActivityTracker />
+              </motion.div>
 
-          {/* Goals and Meditation Section - 2 columns */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="grid lg:grid-cols-2 gap-6 mb-6"
-          >
-            <GoalsTracker />
-            <MeditationTracker />
-          </motion.div>
+              {/* Goals and Meditation - 2 columns */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.25 }}
+                className="grid md:grid-cols-2 gap-6"
+              >
+                <GoalsTracker />
+                <MeditationTracker />
+              </motion.div>
 
-          {/* Meditation & Affirmations Section - 2 columns */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.35 }}
-            className="grid lg:grid-cols-2 gap-6 mb-6"
-          >
-            <GuidedMeditationPlayer />
-            <DailyAffirmations />
-          </motion.div>
+              {/* Crisis Support - Full Width */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.35 }}
+              >
+                <CrisisSupport />
+              </motion.div>
+            </div>
 
-          {/* Crisis Support - Full Width */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <CrisisSupport />
-          </motion.div>
+            {/* Right Column - 1/3 width */}
+            <div className="space-y-6">
+              {/* Guided Meditation Player */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <GuidedMeditationPlayer />
+              </motion.div>
+
+              {/* Daily Affirmations */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <DailyAffirmations />
+              </motion.div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
