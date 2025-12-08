@@ -10,12 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { User, Mail, Calendar, Bell } from "lucide-react";
+import { User, Mail, Calendar, Bell, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, refetch } = useSession();
   const [mounted, setMounted] = useState(false);
   
   // Notification preferences
@@ -34,6 +34,18 @@ export default function ProfilePage() {
   const handleNotificationUpdate = (type: string, value: boolean) => {
     // In a real app, this would save to backend
     toast.success("Notification preferences updated!");
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await authClient.signOut();
+    if (error?.code) {
+      toast.error("Failed to sign out. Please try again.");
+    } else {
+      localStorage.removeItem("bearer_token");
+      refetch();
+      toast.success("Signed out successfully!");
+      router.push("/");
+    }
   };
 
   if (isPending || !mounted) {
@@ -323,6 +335,33 @@ export default function ProfilePage() {
                       }}
                     />
                   </div>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Logout Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <Card className="p-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border-gray-200 dark:border-gray-700 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                      Account Actions
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Sign out of your account
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
               </Card>
             </motion.div>

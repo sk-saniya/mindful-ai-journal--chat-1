@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus, GripVertical, Trash2, LogOut, UserCircle } from "lucide-react";
+import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus, GripVertical, Trash2, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Message {
@@ -273,26 +273,6 @@ export default function ChatPage() {
     }
   };
 
-  const handleSignOut = async () => {
-    const token = localStorage.getItem("bearer_token");
-    const { error } = await authClient.signOut({
-      fetchOptions: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-    
-    if (error?.code) {
-      toast.error(error.code);
-    } else {
-      localStorage.removeItem("bearer_token");
-      refetch();
-      toast.success("Signed out successfully");
-      router.push("/");
-    }
-  };
-
   if (isPending || isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -331,19 +311,17 @@ export default function ChatPage() {
       <Navigation />
 
       <main className="flex-1 pt-16 flex overflow-hidden">
-        {/* Resizable Sidebar */}
-        <AnimatePresence>
+        {/* Sidebar with Push Effect */}
+        <AnimatePresence mode="wait">
           {sidebarOpen && (
             <motion.div
-              ref={sidebarRef}
-              initial={{ x: -sidebarWidth, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -sidebarWidth, opacity: 0 }}
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: sidebarWidth, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              style={{ width: sidebarWidth }}
-              className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 flex-shrink-0"
+              className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 flex-shrink-0 shadow-xl"
             >
-              <div className="h-full flex flex-col">
+              <div className="h-full flex flex-col" style={{ width: sidebarWidth }}>
                 {/* Header Section */}
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-4">
@@ -370,7 +348,7 @@ export default function ChatPage() {
                   >
                     <Button
                       onClick={startNewChat}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-md"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       New Chat
@@ -384,7 +362,7 @@ export default function ChatPage() {
                     {chatSessions.length === 0 ? (
                       <div className="text-center py-8">
                         <MessageSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                           No conversations yet
                         </p>
                       </div>
@@ -397,7 +375,7 @@ export default function ChatPage() {
                           transition={{ delay: index * 0.05 }}
                           className="group"
                         >
-                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 px-2">
+                          <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 px-2">
                             {getRelativeDate(chatSession.timestamp)}
                           </div>
                           <motion.div
@@ -410,7 +388,7 @@ export default function ChatPage() {
                               className={`w-full text-left p-3 rounded-lg transition-all ${
                                 activeSessionIndex === index
                                   ? "bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500"
-                                  : "bg-white/50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                  : "bg-white/70 dark:bg-gray-700/70 hover:bg-gray-100 dark:hover:bg-gray-700"
                               }`}
                             >
                               <div className="flex items-start space-x-2">
@@ -418,10 +396,10 @@ export default function ChatPage() {
                                   activeSessionIndex === index ? "text-blue-600" : "text-blue-500"
                                 }`} />
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                                  <p className="text-sm text-gray-800 dark:text-gray-200 font-medium truncate">
                                     {chatSession.preview}
                                   </p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                                     {chatSession.messages.length} messages
                                   </p>
                                 </div>
@@ -442,40 +420,32 @@ export default function ChatPage() {
                   </div>
                 </ScrollArea>
 
-                {/* Profile & Logout Section */}
+                {/* Profile Section */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50"
+                  className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60"
                 >
-                  <div className="flex items-center space-x-3 mb-3 p-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
-                      <UserCircle className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                        {session.user.name}
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                        {session.user.email}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <Button
+                    onClick={() => router.push("/profile")}
+                    variant="ghost"
+                    className="w-full p-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all rounded-lg"
                   >
-                    <Button
-                      onClick={handleSignOut}
-                      variant="outline"
-                      className="w-full border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </motion.div>
+                    <div className="flex items-center space-x-3 w-full">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                        <UserCircle className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                          {session.user.name}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                          View Profile
+                        </p>
+                      </div>
+                    </div>
+                  </Button>
                 </motion.div>
               </div>
 
@@ -493,7 +463,7 @@ export default function ChatPage() {
         </AnimatePresence>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col px-4 py-8">
+        <div className="flex-1 flex flex-col px-4 py-8 overflow-hidden">
           <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col">
             {/* Header */}
             <motion.div
@@ -509,6 +479,7 @@ export default function ChatPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setSidebarOpen(true)}
+                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
                     >
                       <Menu className="h-5 w-5" />
                     </Button>
@@ -519,7 +490,7 @@ export default function ChatPage() {
                         AI Chat Companion
                       </span>
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">
+                    <p className="text-gray-700 dark:text-gray-300 text-lg font-medium mt-1">
                       {activeSessionIndex !== null ? "Continue your conversation" : "Share your thoughts and feelings"}
                     </p>
                   </div>
@@ -534,7 +505,7 @@ export default function ChatPage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="flex-1 flex flex-col"
             >
-              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col shadow-xl">
+              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col shadow-xl">
                 {/* Messages Area */}
                 <ScrollArea
                   ref={scrollRef}
@@ -566,7 +537,7 @@ export default function ChatPage() {
                         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                           {activeSessionIndex !== null ? "Load a Conversation" : "Start a New Conversation"}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-400 max-w-md">
+                        <p className="text-gray-700 dark:text-gray-300 max-w-md font-medium">
                           {activeSessionIndex !== null 
                             ? "Select a conversation from the sidebar or start a new one."
                             : "Your AI companion is here to listen and support you. Share anything on your mind."
@@ -608,13 +579,13 @@ export default function ChatPage() {
                                   : "bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                               }`}
                             >
-                              <p className="text-sm leading-relaxed">
+                              <p className="text-sm leading-relaxed font-medium">
                                 {message.message}
                               </p>
-                              <p className={`text-xs mt-2 ${
+                              <p className={`text-xs mt-2 font-medium ${
                                 message.role === "user" 
                                   ? "text-blue-100" 
-                                  : "text-gray-500 dark:text-gray-400"
+                                  : "text-gray-600 dark:text-gray-400"
                               }`}>
                                 {new Date(message.createdAt).toLocaleTimeString([], {
                                   hour: "2-digit",
@@ -639,7 +610,7 @@ export default function ChatPage() {
                 </ScrollArea>
 
                 {/* Input Area */}
-                <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white/50 dark:bg-gray-800/50">
+                <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white/60 dark:bg-gray-800/60">
                   <div className="flex space-x-2">
                     <Textarea
                       value={input}
@@ -651,7 +622,7 @@ export default function ChatPage() {
                         }
                       }}
                       placeholder="Type your message... (Press Enter to send)"
-                      className="min-h-[60px] resize-none bg-white dark:bg-gray-800"
+                      className="min-h-[60px] resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium"
                       disabled={isSending}
                     />
                     <motion.div

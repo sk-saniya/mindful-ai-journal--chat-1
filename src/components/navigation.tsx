@@ -39,25 +39,6 @@ export const Navigation = () => {
     document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 
-  const handleSignOut = async () => {
-    const token = localStorage.getItem("bearer_token");
-    const { error } = await authClient.signOut({
-      fetchOptions: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-    
-    if (error?.code) {
-      toast.error(error.code);
-    } else {
-      localStorage.removeItem("bearer_token");
-      refetch();
-      router.push("/");
-    }
-  };
-
   if (!mounted) return null;
 
   return (
@@ -144,7 +125,7 @@ export const Navigation = () => {
                   )}
                 </Button>
 
-                {/* User Menu */}
+                {/* User Menu - Only Profile */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -156,21 +137,16 @@ export const Navigation = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <div className="px-2 py-1.5 text-sm font-medium">
+                    <div className="px-2 py-1.5 text-sm font-medium text-gray-900 dark:text-white">
                       {session.user.name}
                     </div>
-                    <div className="px-2 py-1.5 text-xs text-gray-500">
+                    <div className="px-2 py-1.5 text-xs text-gray-500 dark:text-gray-400">
                       {session.user.email}
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push("/profile")}>
                       <UserCircle className="h-4 w-4 mr-2" />
                       Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

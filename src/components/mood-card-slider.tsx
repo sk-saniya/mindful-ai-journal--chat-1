@@ -125,36 +125,50 @@ export const MoodCardSlider = () => {
         <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
           How Are You Feeling Today?
         </h2>
-        <p className="text-base md:text-lg text-gray-700 dark:text-gray-300 font-medium">
+        <p className="text-base md:text-lg text-gray-800 dark:text-gray-200 font-semibold">
           Drag, swipe, or use arrows to explore different moods
         </p>
       </motion.div>
 
-      {/* Main Card Display with Arrow Controls */}
+      {/* Main Card Display with Enhanced Arrow Controls */}
       <div className="relative">
-        {/* Previous Arrow */}
-        <Button
-          onClick={handlePrev}
-          disabled={currentIndex === 0}
-          variant="outline"
-          size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg border-2 border-gray-200 dark:border-gray-700 disabled:opacity-30 hover:scale-110 transition-all"
+        {/* Left Arrow Control */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20"
         >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
+          <Button
+            onClick={handlePrev}
+            disabled={currentIndex === 0}
+            variant="outline"
+            size="icon"
+            className="h-14 w-14 rounded-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-2xl border-2 border-gray-300 dark:border-gray-600 disabled:opacity-20 hover:scale-110 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 transition-all duration-200"
+          >
+            <ChevronLeft className="h-7 w-7 text-gray-800 dark:text-gray-200" />
+          </Button>
+        </motion.div>
 
-        {/* Next Arrow */}
-        <Button
-          onClick={handleNext}
-          disabled={currentIndex === moods.length - 1}
-          variant="outline"
-          size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg border-2 border-gray-200 dark:border-gray-700 disabled:opacity-30 hover:scale-110 transition-all"
+        {/* Right Arrow Control */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20"
         >
-          <ChevronRight className="h-6 w-6" />
-        </Button>
+          <Button
+            onClick={handleNext}
+            disabled={currentIndex === moods.length - 1}
+            variant="outline"
+            size="icon"
+            className="h-14 w-14 rounded-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-2xl border-2 border-gray-300 dark:border-gray-600 disabled:opacity-20 hover:scale-110 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 transition-all duration-200"
+          >
+            <ChevronRight className="h-7 w-7 text-gray-800 dark:text-gray-200" />
+          </Button>
+        </motion.div>
 
-        <div className="relative h-[420px] md:h-[480px] mb-8 overflow-hidden px-16" ref={containerRef}>
+        <div className="relative h-[420px] md:h-[480px] mb-8 overflow-hidden px-20 md:px-24" ref={containerRef}>
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -190,7 +204,7 @@ export const MoodCardSlider = () => {
                   }}
                 >
                   <div
-                    className={`relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden`}
+                    className={`relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden`}
                   >
                     {/* Background Glow */}
                     <div
@@ -238,7 +252,7 @@ export const MoodCardSlider = () => {
                       </h3>
 
                       {/* Description */}
-                      <p className="text-gray-700 dark:text-gray-300 text-center text-base font-medium">
+                      <p className="text-gray-800 dark:text-gray-200 text-center text-base font-semibold">
                         {mood.description}
                       </p>
                     </div>
@@ -261,8 +275,8 @@ export const MoodCardSlider = () => {
           >
             <motion.div
               animate={{
-                scale: index === currentIndex ? 1.3 : 1,
-                opacity: index === currentIndex ? 1 : 0.4,
+                scale: index === currentIndex ? 1.4 : 1,
+                opacity: index === currentIndex ? 1 : 0.5,
               }}
               className={`w-3 h-3 rounded-full bg-gradient-to-r ${mood.color} transition-all shadow-lg`}
             />
@@ -276,11 +290,11 @@ export const MoodCardSlider = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
-        className="text-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-4 max-w-md mx-auto border border-gray-200 dark:border-gray-700"
+        className="text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-5 max-w-md mx-auto border-2 border-gray-200 dark:border-gray-700 shadow-lg"
       >
-        <p className="text-lg text-gray-800 dark:text-gray-200 font-semibold">
+        <p className="text-lg text-gray-900 dark:text-gray-100 font-bold">
           Currently viewing:{" "}
-          <span className={`font-bold bg-gradient-to-r ${currentMood.color} bg-clip-text text-transparent text-xl`}>
+          <span className={`font-extrabold bg-gradient-to-r ${currentMood.color} bg-clip-text text-transparent text-xl`}>
             {currentMood.label}
           </span>
         </p>
