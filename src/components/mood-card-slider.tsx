@@ -82,12 +82,34 @@ const moods = [
 
 export const MoodCardSlider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragX = useMotionValue(0);
+
+  // Auto-rotation effect
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => {
+        // Loop back to start when reaching the end
+        if (prev >= moods.length - 1) {
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 3500); // Change card every 3.5 seconds
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   const onDragEnd = (_: any, info: PanInfo) => {
     const offset = info.offset.x;
     const velocity = info.velocity.x;
+
+    // Pause auto-rotation when user interacts
+    setIsPaused(true);
+    setTimeout(() => setIsPaused(false), 5000); // Resume after 5 seconds
 
     // Improved drag sensitivity
     if (Math.abs(velocity) > 300 || Math.abs(offset) > 80) {
@@ -95,19 +117,31 @@ export const MoodCardSlider = () => {
         setCurrentIndex(currentIndex - 1);
       } else if (offset < 0 && currentIndex < moods.length - 1) {
         setCurrentIndex(currentIndex + 1);
+      } else if (offset < 0 && currentIndex === moods.length - 1) {
+        setCurrentIndex(0); // Loop back to start
       }
     }
   };
 
   const handlePrev = () => {
+    setIsPaused(true);
+    setTimeout(() => setIsPaused(false), 5000);
+    
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
+    } else {
+      setCurrentIndex(moods.length - 1); // Loop to end
     }
   };
 
   const handleNext = () => {
+    setIsPaused(true);
+    setTimeout(() => setIsPaused(false), 5000);
+    
     if (currentIndex < moods.length - 1) {
       setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(0); // Loop back to start
     }
   };
 
@@ -143,7 +177,7 @@ export const MoodCardSlider = () => {
             whileHover={{ scale: 1.1, rotate: -15 }}
             whileTap={{ scale: 0.9 }}
             animate={{ 
-              rotate: currentIndex === 0 ? 0 : [-5, 5, -5],
+              rotate: [-5, 5, -5],
             }}
             transition={{
               rotate: {
@@ -155,10 +189,9 @@ export const MoodCardSlider = () => {
           >
             <Button
               onClick={handlePrev}
-              disabled={currentIndex === 0}
               variant="outline"
               size="icon"
-              className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 backdrop-blur-sm shadow-2xl border-2 border-white/50 disabled:opacity-30 disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200"
+              className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 backdrop-blur-sm shadow-2xl border-2 border-white/50 transition-all duration-200"
             >
               <ChevronLeft className="h-8 w-8 text-white font-bold" />
             </Button>
@@ -176,7 +209,7 @@ export const MoodCardSlider = () => {
             whileHover={{ scale: 1.1, rotate: 15 }}
             whileTap={{ scale: 0.9 }}
             animate={{ 
-              rotate: currentIndex === moods.length - 1 ? 0 : [5, -5, 5],
+              rotate: [5, -5, 5],
             }}
             transition={{
               rotate: {
@@ -188,17 +221,21 @@ export const MoodCardSlider = () => {
           >
             <Button
               onClick={handleNext}
-              disabled={currentIndex === moods.length - 1}
               variant="outline"
               size="icon"
-              className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 backdrop-blur-sm shadow-2xl border-2 border-white/50 disabled:opacity-30 disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200"
+              className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 backdrop-blur-sm shadow-2xl border-2 border-white/50 transition-all duration-200"
             >
               <ChevronRight className="h-8 w-8 text-white font-bold" />
             </Button>
           </motion.div>
         </motion.div>
 
-        <div className="relative h-[420px] md:h-[480px] mb-8 overflow-hidden px-20 md:px-24" ref={containerRef}>
+        <div 
+          className="relative h-[420px] md:h-[480px] mb-8 overflow-hidden px-20 md:px-24" 
+          ref={containerRef}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -299,7 +336,11 @@ export const MoodCardSlider = () => {
         {moods.map((mood, index) => (
           <button
             key={mood.id}
-            onClick={() => setCurrentIndex(index)}
+            onClick={() => {
+              setCurrentIndex(index);
+              setIsPaused(true);
+              setTimeout(() => setIsPaused(false), 5000);
+            }}
             className="group relative transition-transform hover:scale-125"
             aria-label={`Go to ${mood.label}`}
           >

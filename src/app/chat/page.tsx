@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession, authClient } from "@/lib/auth-client";
 import { Navigation } from "@/components/navigation";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus, GripVertical, Trash2, UserCircle } from "lucide-react";
+import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus, Trash2, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Message {
@@ -36,12 +36,9 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(320);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [activeSessionIndex, setActiveSessionIndex] = useState<number | null>(null);
-  const [isResizing, setIsResizing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isPending && !session?.user) {
@@ -58,31 +55,6 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // Handle sidebar resize
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
-      const newWidth = e.clientX;
-      if (newWidth >= 250 && newWidth <= 500) {
-        setSidebarWidth(newWidth);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-    };
-
-    if (isResizing) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isResizing]);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -311,156 +283,127 @@ export default function ChatPage() {
       <Navigation />
 
       <main className="flex-1 pt-16 flex overflow-hidden">
-        {/* Sidebar with Push Effect */}
-        <AnimatePresence mode="wait">
-          {sidebarOpen && (
-            <motion.div
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: sidebarWidth, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 flex-shrink-0 shadow-xl"
-            >
-              <div className="h-full flex flex-col" style={{ width: sidebarWidth }}>
-                {/* Header Section */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        Chat History
-                      </h2>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setSidebarOpen(false)}
-                      className="lg:hidden"
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
+        {/* Static Sidebar - No Animations */}
+        {sidebarOpen && (
+          <div className="w-80 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 flex-shrink-0 shadow-xl">
+            <div className="h-full flex flex-col">
+              {/* Header Section */}
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Chat History
+                    </h2>
                   </div>
-
-                  {/* New Chat Button */}
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSidebarOpen(false)}
+                    className="lg:hidden"
                   >
-                    <Button
-                      onClick={startNewChat}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-md"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Chat
-                    </Button>
-                  </motion.div>
+                    <X className="h-5 w-5" />
+                  </Button>
                 </div>
 
-                {/* Chat Sessions List */}
-                <ScrollArea className="flex-1 p-4">
-                  <div className="space-y-2 pr-2">
-                    {chatSessions.length === 0 ? (
-                      <div className="text-center py-8">
-                        <MessageSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                          No conversations yet
-                        </p>
-                      </div>
-                    ) : (
-                      chatSessions.map((chatSession, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="group"
-                        >
-                          <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 px-2">
-                            {getRelativeDate(chatSession.timestamp)}
-                          </div>
-                          <motion.div
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="relative"
-                          >
-                            <button
-                              onClick={() => loadSession(index)}
-                              className={`w-full text-left p-3 rounded-lg transition-all ${
-                                activeSessionIndex === index
-                                  ? "bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500"
-                                  : "bg-white/70 dark:bg-gray-700/70 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              }`}
-                            >
-                              <div className="flex items-start space-x-2">
-                                <MessageSquare className={`h-4 w-4 mt-1 flex-shrink-0 ${
-                                  activeSessionIndex === index ? "text-blue-600" : "text-blue-500"
-                                }`} />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm text-gray-800 dark:text-gray-200 font-medium truncate">
-                                    {chatSession.preview}
-                                  </p>
-                                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                    {chatSession.messages.length} messages
-                                  </p>
-                                </div>
-                              </div>
-                            </button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => deleteSession(index, e)}
-                              className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="h-3 w-3 text-red-500" />
-                            </Button>
-                          </motion.div>
-                        </motion.div>
-                      ))
-                    )}
-                  </div>
-                </ScrollArea>
-
-                {/* Profile Section */}
+                {/* New Chat Button */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <Button
-                    onClick={() => router.push("/profile")}
-                    variant="ghost"
-                    className="w-full p-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all rounded-lg"
+                    onClick={startNewChat}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-md"
                   >
-                    <div className="flex items-center space-x-3 w-full">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
-                        <UserCircle className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                          {session.user.name}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                          View Profile
-                        </p>
-                      </div>
-                    </div>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Chat
                   </Button>
                 </motion.div>
               </div>
 
-              {/* Resize Handle */}
-              <div
-                className="absolute top-0 right-0 w-1 h-full cursor-ew-resize hover:bg-blue-500 transition-colors group"
-                onMouseDown={() => setIsResizing(true)}
-              >
-                <div className="absolute top-1/2 -translate-y-1/2 right-0 w-4 h-12 flex items-center justify-center">
-                  <GripVertical className="h-4 w-4 text-gray-400 group-hover:text-blue-500" />
+              {/* Chat Sessions List */}
+              <ScrollArea className="flex-1 p-4">
+                <div className="space-y-2 pr-2">
+                  {chatSessions.length === 0 ? (
+                    <div className="text-center py-8">
+                      <MessageSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                        No conversations yet
+                      </p>
+                    </div>
+                  ) : (
+                    chatSessions.map((chatSession, index) => (
+                      <div key={index} className="group">
+                        <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 px-2">
+                          {getRelativeDate(chatSession.timestamp)}
+                        </div>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="relative"
+                        >
+                          <button
+                            onClick={() => loadSession(index)}
+                            className={`w-full text-left p-3 rounded-lg transition-all ${
+                              activeSessionIndex === index
+                                ? "bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500"
+                                : "bg-white/70 dark:bg-gray-700/70 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            }`}
+                          >
+                            <div className="flex items-start space-x-2">
+                              <MessageSquare className={`h-4 w-4 mt-1 flex-shrink-0 ${
+                                activeSessionIndex === index ? "text-blue-600" : "text-blue-500"
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-gray-800 dark:text-gray-200 font-medium truncate">
+                                  {chatSession.preview}
+                                </p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                  {chatSession.messages.length} messages
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => deleteSession(index, e)}
+                            className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="h-3 w-3 text-red-500" />
+                          </Button>
+                        </motion.div>
+                      </div>
+                    ))
+                  )}
                 </div>
+              </ScrollArea>
+
+              {/* Profile Section */}
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60">
+                <Button
+                  onClick={() => router.push("/profile")}
+                  variant="ghost"
+                  className="w-full p-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all rounded-lg"
+                >
+                  <div className="flex items-center space-x-3 w-full">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                      <UserCircle className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        {session.user.name}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                        View Profile
+                      </p>
+                    </div>
+                  </div>
+                </Button>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+        )}
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col px-4 py-8 overflow-hidden">
