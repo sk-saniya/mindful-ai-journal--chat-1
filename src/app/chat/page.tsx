@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Navigation } from "@/components/navigation";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus } from "lucide-react";
+import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus, GripVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Message {
@@ -36,9 +36,12 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(320);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [activeSessionIndex, setActiveSessionIndex] = useState<number | null>(null);
+  const [isResizing, setIsResizing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isPending && !session?.user) {
@@ -55,6 +58,31 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Handle sidebar resize
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      const newWidth = e.clientX;
+      if (newWidth >= 250 && newWidth <= 500) {
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -74,8 +102,9 @@ export default function ChatPage() {
       if (response.ok) {
         const data = await response.json();
         setAllMessages(data);
-        setMessages(data);
         groupMessagesBySessions(data);
+        // Don't automatically load messages - start with empty state
+        setMessages([]);
       }
     } catch (error) {
       console.error("Failed to fetch messages:", error);
@@ -85,24 +114,42 @@ export default function ChatPage() {
   };
 
   const groupMessagesBySessions = (allMessages: Message[]) => {
-    const sessions: { [key: string]: Message[] } = {};
-    
+    // Group messages by conversation threads (detect gaps of more than 1 hour)
+    const sessions: ChatSession[] = [];
+    let currentSession: Message[] = [];
+    let lastTimestamp: Date | null = null;
+
     allMessages.forEach((msg) => {
-      const date = new Date(msg.createdAt).toLocaleDateString();
-      if (!sessions[date]) {
-        sessions[date] = [];
+      const msgTime = new Date(msg.createdAt);
+      
+      if (lastTimestamp && (msgTime.getTime() - lastTimestamp.getTime()) > 3600000) {
+        // More than 1 hour gap - new session
+        if (currentSession.length > 0) {
+          sessions.push(createSessionFromMessages(currentSession));
+          currentSession = [];
+        }
       }
-      sessions[date].push(msg);
+      
+      currentSession.push(msg);
+      lastTimestamp = msgTime;
     });
 
-    const sessionArray: ChatSession[] = Object.entries(sessions).map(([date, msgs]) => ({
-      date,
-      messages: msgs,
-      preview: msgs.find(m => m.role === "user")?.message.substring(0, 50) + "..." || "New conversation",
-      timestamp: msgs[0]?.createdAt || "",
-    }));
+    if (currentSession.length > 0) {
+      sessions.push(createSessionFromMessages(currentSession));
+    }
 
-    setChatSessions(sessionArray.reverse());
+    setChatSessions(sessions.reverse());
+  };
+
+  const createSessionFromMessages = (msgs: Message[]): ChatSession => {
+    const firstMsg = msgs[0];
+    const userMsg = msgs.find(m => m.role === "user");
+    return {
+      date: new Date(firstMsg.createdAt).toLocaleDateString(),
+      messages: msgs,
+      preview: userMsg?.message.substring(0, 60) + "..." || "New conversation",
+      timestamp: firstMsg.createdAt,
+    };
   };
 
   const loadSession = (index: number) => {
@@ -115,6 +162,39 @@ export default function ChatPage() {
     setActiveSessionIndex(null);
     setMessages([]);
     setInput("");
+    toast.success("Started new conversation");
+  };
+
+  const deleteSession = async (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const session = chatSessions[index];
+    try {
+      const token = localStorage.getItem("bearer_token");
+      
+      // Delete all messages in this session
+      for (const msg of session.messages) {
+        await fetch(`/api/chat-history/${msg.id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+
+      toast.success("Conversation deleted");
+      
+      // Refresh messages
+      await fetchMessages();
+      
+      // Clear current view if this was the active session
+      if (activeSessionIndex === index) {
+        setMessages([]);
+        setActiveSessionIndex(null);
+      }
+    } catch (error) {
+      toast.error("Failed to delete conversation");
+    }
   };
 
   const sendMessage = async () => {
@@ -123,6 +203,9 @@ export default function ChatPage() {
     const userMessage = input.trim();
     setInput("");
     setIsSending(true);
+
+    // If starting a new chat, mark it as a new session
+    const isNewSession = messages.length === 0;
 
     try {
       const token = localStorage.getItem("bearer_token");
@@ -153,6 +236,9 @@ export default function ChatPage() {
           "That's a great insight! Recognizing your feelings is an important part of mindfulness. Have you tried any breathing exercises today?",
           "I'm here to listen and support you. Your feelings are valid, and it's okay to take things one day at a time. What would help you feel better right now?",
           "It sounds like you're making progress. Remember to be kind to yourself - healing isn't always linear. Would you like some suggestions for self-care activities?",
+          "That must be challenging for you. It's important to acknowledge these feelings rather than suppress them. Have you considered journaling or meditation?",
+          "Your awareness of your emotional state is commendable. What coping strategies have worked for you in the past?",
+          "I appreciate you opening up to me. Remember, seeking support is a sign of strength, not weakness. How are you taking care of yourself today?",
         ];
 
         const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
@@ -172,7 +258,12 @@ export default function ChatPage() {
         if (aiResponse.ok) {
           const newAiMessage = await aiResponse.json();
           setMessages((prev) => [...prev, newAiMessage]);
-          fetchMessages(); // Refresh to update sidebar
+          
+          // Refresh sidebar to show new session
+          if (isNewSession) {
+            await fetchMessages();
+            toast.success("New conversation started!");
+          }
         }
       }
     } catch (error) {
@@ -211,7 +302,7 @@ export default function ChatPage() {
     } else if (date.toDateString() === yesterday.toDateString()) {
       return "Yesterday";
     } else {
-      return dateString;
+      return date.toLocaleDateString();
     }
   };
 
@@ -220,86 +311,124 @@ export default function ChatPage() {
       <Navigation />
 
       <main className="flex-1 pt-16 flex overflow-hidden">
-        {/* Sidebar */}
+        {/* Resizable Sidebar */}
         <AnimatePresence>
           {sidebarOpen && (
             <motion.div
-              initial={{ x: -300, opacity: 0 }}
+              ref={sidebarRef}
+              initial={{ x: -sidebarWidth, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -300, opacity: 0 }}
+              exit={{ x: -sidebarWidth, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="w-72 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 p-4 overflow-y-auto"
+              style={{ width: sidebarWidth }}
+              className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 flex-shrink-0"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Chat History
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSidebarOpen(false)}
-                  className="lg:hidden"
+              <div className="h-full flex flex-col p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Chat History
+                    </h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSidebarOpen(false)}
+                    className="lg:hidden"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                {/* New Chat Button */}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="mb-4"
                 >
-                  <X className="h-5 w-5" />
-                </Button>
+                  <Button
+                    onClick={startNewChat}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Chat
+                  </Button>
+                </motion.div>
+
+                <ScrollArea className="flex-1">
+                  <div className="space-y-2 pr-2">
+                    {chatSessions.length === 0 ? (
+                      <div className="text-center py-8">
+                        <MessageSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No conversations yet
+                        </p>
+                      </div>
+                    ) : (
+                      chatSessions.map((chatSession, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="group"
+                        >
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 px-2">
+                            {getRelativeDate(chatSession.timestamp)}
+                          </div>
+                          <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="relative"
+                          >
+                            <button
+                              onClick={() => loadSession(index)}
+                              className={`w-full text-left p-3 rounded-lg transition-all ${
+                                activeSessionIndex === index
+                                  ? "bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500"
+                                  : "bg-white/50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              }`}
+                            >
+                              <div className="flex items-start space-x-2">
+                                <MessageSquare className={`h-4 w-4 mt-1 flex-shrink-0 ${
+                                  activeSessionIndex === index ? "text-blue-600" : "text-blue-500"
+                                }`} />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                                    {chatSession.preview}
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    {chatSession.messages.length} messages
+                                  </p>
+                                </div>
+                              </div>
+                            </button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => deleteSession(index, e)}
+                              className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Trash2 className="h-3 w-3 text-red-500" />
+                            </Button>
+                          </motion.div>
+                        </motion.div>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
 
-              {/* New Chat Button */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="mb-4"
+              {/* Resize Handle */}
+              <div
+                className="absolute top-0 right-0 w-1 h-full cursor-ew-resize hover:bg-blue-500 transition-colors group"
+                onMouseDown={() => setIsResizing(true)}
               >
-                <Button
-                  onClick={startNewChat}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Chat
-                </Button>
-              </motion.div>
-
-              <ScrollArea className="h-[calc(100vh-220px)]">
-                <div className="space-y-2">
-                  {chatSessions.map((session, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileHover={{ scale: 1.02 }}
-                      className="group"
-                    >
-                      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 px-2">
-                        {getRelativeDate(session.date)}
-                      </div>
-                      <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => loadSession(index)}
-                        className={`w-full text-left p-3 rounded-lg transition-all ${
-                          activeSessionIndex === index
-                            ? "bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500"
-                            : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                        }`}
-                      >
-                        <div className="flex items-start space-x-2">
-                          <MessageSquare className={`h-4 w-4 mt-1 flex-shrink-0 ${
-                            activeSessionIndex === index ? "text-blue-600" : "text-blue-500"
-                          }`} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                              {session.preview}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {session.messages.length} messages
-                            </p>
-                          </div>
-                        </div>
-                      </motion.button>
-                    </motion.div>
-                  ))}
+                <div className="absolute top-1/2 -translate-y-1/2 right-0 w-4 h-12 flex items-center justify-center">
+                  <GripVertical className="h-4 w-4 text-gray-400 group-hover:text-blue-500" />
                 </div>
-              </ScrollArea>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -332,7 +461,7 @@ export default function ChatPage() {
                       </span>
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 text-lg">
-                      Share your thoughts and feelings
+                      {activeSessionIndex !== null ? "Continue your conversation" : "Share your thoughts and feelings"}
                     </p>
                   </div>
                 </div>
@@ -346,7 +475,7 @@ export default function ChatPage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="flex-1 flex flex-col"
             >
-              <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col">
+              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col shadow-xl">
                 {/* Messages Area */}
                 <ScrollArea
                   ref={scrollRef}
@@ -376,11 +505,13 @@ export default function ChatPage() {
                           <Sparkles className="h-12 w-12 text-white" />
                         </motion.div>
                         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                          Start a Conversation
+                          {activeSessionIndex !== null ? "Load a Conversation" : "Start a New Conversation"}
                         </h3>
                         <p className="text-gray-600 dark:text-gray-400 max-w-md">
-                          Your AI companion is here to listen and support you. Share
-                          anything on your mind.
+                          {activeSessionIndex !== null 
+                            ? "Select a conversation from the sidebar or start a new one."
+                            : "Your AI companion is here to listen and support you. Share anything on your mind."
+                          }
                         </p>
                       </motion.div>
                     ) : (
@@ -412,14 +543,24 @@ export default function ChatPage() {
 
                             <motion.div
                               whileHover={{ scale: 1.01 }}
-                              className={`max-w-[75%] p-4 rounded-2xl ${
+                              className={`max-w-[75%] p-4 rounded-2xl shadow-md ${
                                 message.role === "user"
                                   ? "bg-gradient-to-br from-blue-500 to-purple-500 text-white"
-                                  : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  : "bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                               }`}
                             >
                               <p className="text-sm leading-relaxed">
                                 {message.message}
+                              </p>
+                              <p className={`text-xs mt-2 ${
+                                message.role === "user" 
+                                  ? "text-blue-100" 
+                                  : "text-gray-500 dark:text-gray-400"
+                              }`}>
+                                {new Date(message.createdAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
                               </p>
                             </motion.div>
 
@@ -439,7 +580,7 @@ export default function ChatPage() {
                 </ScrollArea>
 
                 {/* Input Area */}
-                <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white/30 dark:bg-gray-800/30">
+                <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white/50 dark:bg-gray-800/50">
                   <div className="flex space-x-2">
                     <Textarea
                       value={input}
@@ -451,7 +592,7 @@ export default function ChatPage() {
                         }
                       }}
                       placeholder="Type your message... (Press Enter to send)"
-                      className="min-h-[60px] resize-none"
+                      className="min-h-[60px] resize-none bg-white dark:bg-gray-800"
                       disabled={isSending}
                     />
                     <motion.div
@@ -461,9 +602,18 @@ export default function ChatPage() {
                       <Button
                         onClick={sendMessage}
                         disabled={!input.trim() || isSending}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 self-end"
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 self-end h-[60px] px-6"
                       >
-                        <Send className="h-4 w-4" />
+                        {isSending ? (
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          >
+                            <Sparkles className="h-4 w-4" />
+                          </motion.div>
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
                       </Button>
                     </motion.div>
                   </div>
