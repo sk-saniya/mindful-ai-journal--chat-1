@@ -139,15 +139,30 @@ export const MoodCardSlider = () => {
           transition={{ duration: 0.5 }}
           className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20"
         >
-          <Button
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-            variant="outline"
-            size="icon"
-            className="h-14 w-14 rounded-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-2xl border-2 border-gray-300 dark:border-gray-600 disabled:opacity-20 hover:scale-110 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 transition-all duration-200"
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: -15 }}
+            whileTap={{ scale: 0.9 }}
+            animate={{ 
+              rotate: currentIndex === 0 ? 0 : [-5, 5, -5],
+            }}
+            transition={{
+              rotate: {
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
+            }}
           >
-            <ChevronLeft className="h-7 w-7 text-gray-800 dark:text-gray-200" />
-          </Button>
+            <Button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              variant="outline"
+              size="icon"
+              className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 backdrop-blur-sm shadow-2xl border-2 border-white/50 disabled:opacity-30 disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200"
+            >
+              <ChevronLeft className="h-8 w-8 text-white font-bold" />
+            </Button>
+          </motion.div>
         </motion.div>
 
         {/* Right Arrow Control */}
@@ -157,15 +172,30 @@ export const MoodCardSlider = () => {
           transition={{ duration: 0.5 }}
           className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20"
         >
-          <Button
-            onClick={handleNext}
-            disabled={currentIndex === moods.length - 1}
-            variant="outline"
-            size="icon"
-            className="h-14 w-14 rounded-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-2xl border-2 border-gray-300 dark:border-gray-600 disabled:opacity-20 hover:scale-110 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 transition-all duration-200"
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 15 }}
+            whileTap={{ scale: 0.9 }}
+            animate={{ 
+              rotate: currentIndex === moods.length - 1 ? 0 : [5, -5, 5],
+            }}
+            transition={{
+              rotate: {
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
+            }}
           >
-            <ChevronRight className="h-7 w-7 text-gray-800 dark:text-gray-200" />
-          </Button>
+            <Button
+              onClick={handleNext}
+              disabled={currentIndex === moods.length - 1}
+              variant="outline"
+              size="icon"
+              className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 backdrop-blur-sm shadow-2xl border-2 border-white/50 disabled:opacity-30 disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200"
+            >
+              <ChevronRight className="h-8 w-8 text-white font-bold" />
+            </Button>
+          </motion.div>
         </motion.div>
 
         <div className="relative h-[420px] md:h-[480px] mb-8 overflow-hidden px-20 md:px-24" ref={containerRef}>

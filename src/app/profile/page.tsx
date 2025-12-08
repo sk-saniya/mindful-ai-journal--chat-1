@@ -355,13 +355,15 @@ export default function ProfilePage() {
                       Sign out of your account
                     </p>
                   </div>
-                  <button
+                  <motion.button
                     onClick={handleSignOut}
-                    className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-rose-500 via-red-500 to-pink-500 hover:from-rose-600 hover:via-red-600 hover:to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <LogOut className="h-5 w-5" />
                     <span>Sign Out</span>
-                  </button>
+                  </motion.button>
                 </div>
               </Card>
             </motion.div>
