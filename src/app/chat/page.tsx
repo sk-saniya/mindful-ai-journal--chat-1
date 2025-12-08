@@ -3,14 +3,14 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
+import { useSession, authClient } from "@/lib/auth-client";
 import { Navigation } from "@/components/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus, GripVertical, Trash2 } from "lucide-react";
+import { Send, Bot, User, Sparkles, MessageSquare, Menu, X, Plus, GripVertical, Trash2, LogOut, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Message {
@@ -29,7 +29,7 @@ interface ChatSession {
 
 export default function ChatPage() {
   const router = useRouter();
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, refetch } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -273,6 +273,26 @@ export default function ChatPage() {
     }
   };
 
+  const handleSignOut = async () => {
+    const token = localStorage.getItem("bearer_token");
+    const { error } = await authClient.signOut({
+      fetchOptions: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    });
+    
+    if (error?.code) {
+      toast.error(error.code);
+    } else {
+      localStorage.removeItem("bearer_token");
+      refetch();
+      toast.success("Signed out successfully");
+      router.push("/");
+    }
+  };
+
   if (isPending || isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -319,44 +339,47 @@ export default function ChatPage() {
               initial={{ x: -sidebarWidth, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -sidebarWidth, opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
               style={{ width: sidebarWidth }}
               className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 flex-shrink-0"
             >
-              <div className="h-full flex flex-col p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      Chat History
-                    </h2>
+              <div className="h-full flex flex-col">
+                {/* Header Section */}
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2">
+                      <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Chat History
+                      </h2>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSidebarOpen(false)}
+                      className="lg:hidden"
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSidebarOpen(false)}
-                    className="lg:hidden"
+
+                  {/* New Chat Button */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <X className="h-5 w-5" />
-                  </Button>
+                    <Button
+                      onClick={startNewChat}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Chat
+                    </Button>
+                  </motion.div>
                 </div>
 
-                {/* New Chat Button */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="mb-4"
-                >
-                  <Button
-                    onClick={startNewChat}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Chat
-                  </Button>
-                </motion.div>
-
-                <ScrollArea className="flex-1">
+                {/* Chat Sessions List */}
+                <ScrollArea className="flex-1 p-4">
                   <div className="space-y-2 pr-2">
                     {chatSessions.length === 0 ? (
                       <div className="text-center py-8">
@@ -418,6 +441,42 @@ export default function ChatPage() {
                     )}
                   </div>
                 </ScrollArea>
+
+                {/* Profile & Logout Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50"
+                >
+                  <div className="flex items-center space-x-3 mb-3 p-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                      <UserCircle className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        {session.user.name}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                        {session.user.email}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      onClick={handleSignOut}
+                      variant="outline"
+                      className="w-full border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </motion.div>
+                </motion.div>
               </div>
 
               {/* Resize Handle */}
