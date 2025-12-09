@@ -155,29 +155,6 @@ export const StressTracker = () => {
               </>
             )}
           </Button>
-
-          {recentEntries.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                Recent entries ({recentEntries.length})
-              </div>
-              <div className="flex gap-1">
-                {recentEntries.slice(0, 7).map((entry) => (
-                  <div
-                    key={entry.id}
-                    className={`flex-1 h-2 rounded ${
-                      entry.stressLevel <= 3
-                        ? "bg-green-400"
-                        : entry.stressLevel <= 6
-                        ? "bg-yellow-400"
-                        : "bg-red-400"
-                    }`}
-                    title={`${entry.stressLevel}/10 - ${new Date(entry.createdAt).toLocaleDateString()}`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </motion.div>
     </Card>

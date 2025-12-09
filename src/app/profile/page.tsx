@@ -9,20 +9,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { User, Mail, Calendar, Bell, LogOut } from "lucide-react";
+import { User, Mail, Calendar, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, isPending, refetch } = useSession();
   const [mounted, setMounted] = useState(false);
-  
-  // Notification preferences
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [moodReminders, setMoodReminders] = useState(true);
-  const [weeklyReports, setWeeklyReports] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -30,11 +23,6 @@ export default function ProfilePage() {
       router.push("/login");
     }
   }, [session, isPending, router]);
-
-  const handleNotificationUpdate = (type: string, value: boolean) => {
-    // In a real app, this would save to backend
-    toast.success("Notification preferences updated!");
-  };
 
   const handleSignOut = async () => {
     const { error } = await authClient.signOut();
@@ -178,7 +166,7 @@ export default function ProfilePage() {
               </span>
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Manage your account information and preferences
+              Manage your account information
             </p>
           </motion.div>
 
@@ -243,107 +231,11 @@ export default function ProfilePage() {
               </Card>
             </motion.div>
 
-            {/* Notification Preferences */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Card className="p-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border-gray-200 dark:border-gray-700 shadow-xl">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="p-3 rounded-full bg-gradient-to-br from-green-500 to-emerald-500">
-                    <Bell className="h-6 w-6 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                    Notification Preferences
-                  </h2>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="emailNotifications" className="text-base font-medium">
-                        Email Notifications
-                      </Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Receive updates and insights via email
-                      </p>
-                    </div>
-                    <Switch
-                      id="emailNotifications"
-                      checked={emailNotifications}
-                      onCheckedChange={(checked) => {
-                        setEmailNotifications(checked);
-                        handleNotificationUpdate("email", checked);
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="pushNotifications" className="text-base font-medium">
-                        Push Notifications
-                      </Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Get real-time notifications in your browser
-                      </p>
-                    </div>
-                    <Switch
-                      id="pushNotifications"
-                      checked={pushNotifications}
-                      onCheckedChange={(checked) => {
-                        setPushNotifications(checked);
-                        handleNotificationUpdate("push", checked);
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="moodReminders" className="text-base font-medium">
-                        Daily Mood Reminders
-                      </Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Remind me to track my mood each day
-                      </p>
-                    </div>
-                    <Switch
-                      id="moodReminders"
-                      checked={moodReminders}
-                      onCheckedChange={(checked) => {
-                        setMoodReminders(checked);
-                        handleNotificationUpdate("moodReminders", checked);
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="weeklyReports" className="text-base font-medium">
-                        Weekly Progress Reports
-                      </Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Get weekly summaries of your wellness journey
-                      </p>
-                    </div>
-                    <Switch
-                      id="weeklyReports"
-                      checked={weeklyReports}
-                      onCheckedChange={(checked) => {
-                        setWeeklyReports(checked);
-                        handleNotificationUpdate("weeklyReports", checked);
-                      }}
-                    />
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-
             {/* Logout Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Card className="p-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border-gray-200 dark:border-gray-700 shadow-xl">
                 <div className="flex items-center justify-between">

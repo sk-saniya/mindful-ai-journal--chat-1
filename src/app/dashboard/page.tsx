@@ -239,61 +239,24 @@ export default function DashboardPage() {
             />
           </motion.div>
 
-          {/* Wellness Summary Cards - 3 columns */}
+          {/* First Row: Daily Affirmations - Full Width */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="grid md:grid-cols-3 gap-6 mb-6"
+            className="mb-6"
           >
-            {/* Stress Summary Card */}
-            <Card className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg">
-                    <Brain className="h-6 w-6 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Stress Level</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Last 7 days</p>
-                  </div>
-                </div>
-              </div>
-              {isLoadingRecords ? (
-                <Skeleton className="h-16 w-full" />
-              ) : (
-                <div>
-                  <div className="text-4xl font-bold text-red-600 dark:text-red-400 mb-2">
-                    {averageStress}/10
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Average stress level
-                  </p>
-                  {stressRecords.length > 0 && (
-                    <div className="flex gap-1">
-                      {stressRecords.slice(0, 7).map((entry) => (
-                        <div
-                          key={entry.id}
-                          className={`flex-1 h-2 rounded ${
-                            entry.stressLevel <= 3
-                              ? "bg-green-400"
-                              : entry.stressLevel <= 6
-                              ? "bg-yellow-400"
-                              : "bg-red-400"
-                          }`}
-                          title={`${entry.stressLevel}/10 - ${new Date(entry.createdAt).toLocaleDateString()}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {stressRecords.length === 0 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">No records yet</p>
-                  )}
-                </div>
-              )}
-            </Card>
+            <DailyAffirmations />
+          </motion.div>
 
-            {/* Sleep Summary Card */}
+          {/* Second Row: Sleep Quality, Stress Level, Insights, Meditation - 4 columns */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"
+          >
+            {/* Sleep Quality Card */}
             <Card className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -324,24 +287,37 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-600 dark:text-gray-400">Avg quality</p>
                     </div>
                   </div>
-                  {sleepRecords.length > 0 && (
-                    <div className="flex gap-1">
-                      {sleepRecords.slice(0, 7).map((entry) => (
-                        <div
-                          key={entry.id}
-                          className={`flex-1 h-2 rounded ${
-                            entry.quality <= 3
-                              ? "bg-red-400"
-                              : entry.quality <= 6
-                              ? "bg-yellow-400"
-                              : "bg-green-400"
-                          }`}
-                          title={`${entry.hoursSlept}h, Quality: ${entry.quality}/10 - ${new Date(entry.sleepDate).toLocaleDateString()}`}
-                        />
-                      ))}
-                    </div>
-                  )}
                   {sleepRecords.length === 0 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">No records yet</p>
+                  )}
+                </div>
+              )}
+            </Card>
+
+            {/* Stress Level Card */}
+            <Card className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-3 bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg">
+                    <Brain className="h-6 w-6 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Stress Level</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Last 7 days</p>
+                  </div>
+                </div>
+              </div>
+              {isLoadingRecords ? (
+                <Skeleton className="h-16 w-full" />
+              ) : (
+                <div>
+                  <div className="text-4xl font-bold text-red-600 dark:text-red-400 mb-2">
+                    {averageStress}/10
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Average stress level
+                  </p>
+                  {stressRecords.length === 0 && (
                     <p className="text-xs text-gray-500 dark:text-gray-400">No records yet</p>
                   )}
                 </div>
@@ -376,13 +352,18 @@ export default function DashboardPage() {
                 </div>
               </div>
             </Card>
+
+            {/* Meditation Card */}
+            <Card className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border-gray-200 dark:border-gray-700">
+              <MeditationTracker />
+            </Card>
           </motion.div>
 
           {/* Mood Trends - Full Width */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-6"
           >
             <MoodTrends key={refreshKey} selectedMood={selectedMood} />
@@ -396,7 +377,7 @@ export default function DashboardPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.5, delay: 0.25 }}
                 className="grid md:grid-cols-3 gap-6"
               >
                 <StressTracker />
@@ -404,15 +385,13 @@ export default function DashboardPage() {
                 <ActivityTracker />
               </motion.div>
 
-              {/* Goals and Meditation - 2 columns */}
+              {/* Goals Tracker */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.25 }}
-                className="grid md:grid-cols-2 gap-6"
+                transition={{ duration: 0.5, delay: 0.3 }}
               >
                 <GoalsTracker />
-                <MeditationTracker />
               </motion.div>
 
               {/* Crisis Support - Full Width */}
@@ -434,15 +413,6 @@ export default function DashboardPage() {
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
                 <GuidedMeditationPlayer />
-              </motion.div>
-
-              {/* Daily Affirmations */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <DailyAffirmations />
               </motion.div>
             </div>
           </div>
