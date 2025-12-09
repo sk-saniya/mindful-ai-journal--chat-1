@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, Circle, Plus, Target } from "lucide-react";
+import { CheckCircle2, Circle, Plus, Target, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -113,6 +113,28 @@ export const ActivityTracker = () => {
     }
   };
 
+  const handleDeleteActivity = async (id: number, activityName: string) => {
+    try {
+      const token = localStorage.getItem("bearer_token");
+      
+      const response = await fetch(`/api/activity-completions?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        toast.success(`"${activityName}" deleted successfully`);
+        await fetchActivities();
+      } else {
+        toast.error("Failed to delete activity");
+      }
+    } catch (error) {
+      toast.error("Failed to delete activity");
+    }
+  };
+
   const completedCount = activities.filter((a) => a.completed).length;
   const totalCount = activities.length;
   const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -191,27 +213,42 @@ export const ActivityTracker = () => {
                   key={activity.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                     activity.completed
                       ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
                       : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                   }`}
-                  onClick={() => handleToggleComplete(activity.id, activity.completed)}
                 >
-                  {activity.completed ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-gray-400 dark:text-gray-600 flex-shrink-0" />
-                  )}
-                  <span
-                    className={`flex-1 ${
-                      activity.completed
-                        ? "line-through text-gray-500 dark:text-gray-400"
-                        : "text-gray-900 dark:text-gray-100"
-                    }`}
+                  <div
+                    className="flex items-center gap-3 flex-1 cursor-pointer"
+                    onClick={() => handleToggleComplete(activity.id, activity.completed)}
                   >
-                    {activity.activityName}
-                  </span>
+                    {activity.completed ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    ) : (
+                      <Circle className="h-5 w-5 text-gray-400 dark:text-gray-600 flex-shrink-0" />
+                    )}
+                    <span
+                      className={`flex-1 ${
+                        activity.completed
+                          ? "line-through text-gray-500 dark:text-gray-400"
+                          : "text-gray-900 dark:text-gray-100"
+                      }`}
+                    >
+                      {activity.activityName}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteActivity(activity.id, activity.activityName);
+                    }}
+                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 flex-shrink-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </motion.div>
               ))
             )}
