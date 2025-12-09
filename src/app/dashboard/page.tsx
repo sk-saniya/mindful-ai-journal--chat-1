@@ -352,14 +352,15 @@ export default function DashboardPage() {
             </Card>
           </motion.div>
 
-          {/* Mood Trends - Full Width */}
+          {/* Mood Trends and Crisis Support - Same Row */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-6"
+            className="grid lg:grid-cols-2 gap-6 mb-6"
           >
             <MoodTrends key={refreshKey} selectedMood={selectedMood} />
+            <CrisisSupport />
           </motion.div>
 
           {/* Main Content Grid - 2 columns */}
@@ -386,15 +387,6 @@ export default function DashboardPage() {
               >
                 <GoalsTracker />
                 <ActivityTracker />
-              </motion.div>
-
-              {/* Crisis Support - Full Width */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.35 }}
-              >
-                <CrisisSupport />
               </motion.div>
             </div>
 
