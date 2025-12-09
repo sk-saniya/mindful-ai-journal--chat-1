@@ -161,8 +161,14 @@ export const GuidedMeditationPlayer = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
+                  whileHover={{ 
+                    scale: 1.05, 
+                    y: -5,
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => startMeditation(type)}
-                  className={`w-full p-4 rounded-lg bg-gradient-to-r ${type.color} text-white text-left hover:shadow-lg transition-all`}
+                  className={`w-full p-4 rounded-lg bg-gradient-to-r ${type.color} text-white text-left hover:shadow-lg transition-shadow`}
                 >
                   <p className="font-semibold">{type.name}</p>
                   <p className="text-sm opacity-90">{type.description}</p>
