@@ -232,21 +232,14 @@ export default function DashboardPage() {
               Track your wellness journey and discover insights
             </p>
 
-            {/* Mood Tracker Slider */}
-            <MoodTrackerSlider 
-              onMoodSelect={handleMoodSelect}
-              onMoodSaved={handleMoodSaved}
-            />
-          </motion.div>
-
-          {/* First Row: Daily Affirmations - Full Width */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-6"
-          >
-            <DailyAffirmations />
+            {/* Mood Tracker and Daily Affirmation in Same Row */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              <MoodTrackerSlider 
+                onMoodSelect={handleMoodSelect}
+                onMoodSaved={handleMoodSaved}
+              />
+              <DailyAffirmations />
+            </div>
           </motion.div>
 
           {/* Second Row: Sleep Quality, Stress Level, Insights, Meditation - 4 columns */}
