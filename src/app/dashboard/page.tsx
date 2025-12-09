@@ -366,25 +366,26 @@ export default function DashboardPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Left Column - 2/3 width */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Wellness Trackers Grid - 3 columns */}
+              {/* Wellness Trackers Grid - 2 columns */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.25 }}
-                className="grid md:grid-cols-3 gap-6"
+                className="grid md:grid-cols-2 gap-6"
               >
                 <StressTracker />
                 <SleepTracker />
-                <ActivityTracker />
               </motion.div>
 
-              {/* Goals Tracker */}
+              {/* Goals and Activity Tracker - 2 columns */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
+                className="grid md:grid-cols-2 gap-6"
               >
                 <GoalsTracker />
+                <ActivityTracker />
               </motion.div>
 
               {/* Crisis Support - Full Width */}
